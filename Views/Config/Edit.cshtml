@@ -1,0 +1,56 @@
+﻿@model OpenDoors.Models.ArchiveConfig
+
+@{
+  ViewBag.Title = "Edit";
+  Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+<h2>Edit</h2>
+
+@using (Html.BeginForm("Edit", "Config", FormMethod.Post, new { @class = "form" }))
+{
+  @Html.AntiForgeryToken()
+  @Html.ValidationSummary(true)
+
+  <fieldset>
+    <legend>ArchiveConfig</legend>
+
+    @Html.HiddenFor(model => model.id)
+    @Html.HiddenFor(model => model.Key)
+    @{
+      var excluded = new List<String>() { "id", "Key", "ODNote", "Imported", "NotImported" };
+    }
+
+    @foreach (var property in ViewData.ModelMetadata.Properties.Where(p => !excluded.Contains(p.PropertyName)))
+    {
+      <div class="form-group">
+        <label for="@property.PropertyName" style="width: 150px">@(property.DisplayName ?? property.PropertyName)</label>
+        @Html.Editor(property.PropertyName)
+        @Html.ValidationMessage(property.PropertyName, new { @class = "has-error" })
+      </div>
+    }
+
+    <div class="form-group">
+      <label for="property.PropertyName" style="width: 150px">@Html.DisplayNameFor(m => m.ODNote)</label>
+      @Html.TextAreaFor(m => m.ODNote, 5, 1, new { @class = "form-control" })
+      @Html.ValidationMessageFor(m => m.ODNote)
+    </div>
+
+    <div class="form-group">
+      <label for="property.PropertyName" style="width: 150px">@Html.DisplayNameFor(m => m.Imported)</label>
+      @Html.DisplayTextFor(m => m.Imported) (automatically updated)
+    </div>
+
+    <div class="form-group">
+      <label for="property.PropertyName" style="width: 150px">@Html.DisplayNameFor(m => m.NotImported)</label>
+      @Html.DisplayTextFor(m => m.NotImported) (automatically updated)
+    </div>
+
+    <input type="submit" value="Save" class="btn btn-primary" />
+    @Html.ActionLink("Cancel", "Details", "Config", new { id = Model.id }, new { @class = "btn btn-default" })
+    @Html.ActionLink("Back to List", "Index", "Authors", new { }, new { @class = "btn btn-default" })
+  </fieldset>
+}
+
+<div>
+</div>

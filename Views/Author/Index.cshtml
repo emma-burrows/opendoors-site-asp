@@ -1,0 +1,115 @@
+﻿@model PagedList.IPagedList<OpenDoors.Models.Author>
+@using PagedList;
+@using PagedList.Mvc;
+
+@{
+  var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
+  ViewBag.Title = config.Name + " Authors";
+  Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+<div class="center">
+  <div class="pagination-container">
+    <ul class="pagination">
+      @for (char c = 'A'; c <= 'Z'; c++)
+      {
+        <li>@Html.ActionLink(c.ToString(),
+                    "Index",
+                    "Author",
+                    new { letter = c, page = Model.PageNumber, pageSize = Model.PageSize },
+                    new { })
+        </li>
+      }
+    </ul>
+  </div>
+</div>
+
+<div class="center">
+  @Html.PagedListPager(Model, page => Url.Action("Index", new { letter = Request.QueryString["letter"], page, pageSize = Model.PageSize }))
+</div>
+
+<div class="row">
+  @foreach (var item in Model.OrderBy(item => item.Name))
+  {
+    bool doNotImport = Convert.ToBoolean(item.DoNotImport);
+    bool imported = Convert.ToBoolean(item.Imported);
+    string cssClass = imported ? "imported" : "";
+    cssClass += doNotImport ? "donotimport" : "";
+
+    <article class="col-md-12 @cssClass">
+      <div class="row">
+        <div class="col-md-4 col-sm-3">
+          <h2>@Html.DisplayFor(modelItem => item.Name)</h2>
+        </div>
+        <div class="col-md-8 col-sm-9 extra-space">
+
+          @if(!doNotImport && !imported) {
+            @Html.ActionLink("import all",
+                      "ImportAll",
+                      "Author",
+                      new { id = item.ID, letter = Request.QueryString["letter"], page = Model.PageNumber, pageSize = Model.PageSize },
+                      new { @class = "btn btn-info" })
+          }
+
+          @Html.ActionLink(doNotImport ? "allow importing all" : "do NOT import all",
+                    "ImportNone",
+                    "Author",
+                    new { id = item.ID, doNotImport = !doNotImport, letter = Request.QueryString["letter"], page = Model.PageNumber, pageSize = Model.PageSize },
+                    new { @class = "btn btn-warning" })
+
+          @Html.ActionLink("check all imported",
+                  "CheckAll",
+                  "Author",
+                  new { id = item.ID, letter = Request.QueryString["letter"], page = Model.PageNumber, pageSize = Model.PageSize },
+                  new { @class = "btn btn-success" })
+          <br />
+        </div>
+      </div>
+      <hr />
+
+      @if (item.Stories.Count > 0)
+      {
+        ViewData["type"] = "Story";
+        <h3>Stories</h3>
+        foreach (var story in item.Stories.OrderBy(s => s.Title))
+        {
+          @Html.Partial("_Meta", story, ViewData)
+        }
+      }
+
+      @if (item.Bookmarks.Count > 0)
+      {
+        ViewData["type"] = "Bookmark";
+        <h3>Bookmarks</h3>
+        foreach (var bookmark in item.Bookmarks.OrderBy(s => s.Title))
+        {
+          @Html.Partial("_Meta", bookmark, ViewData)
+        }
+      }
+
+      @if (item.Stories.Count + item.Bookmarks.Count == 0)
+      {
+        <span>No bookmarks or stories.</span>
+      }
+
+    </article>
+  }
+</div>
+
+
+<div class="center">
+  <div class="pagination-container">
+    <ul class="pagination">
+      @for (char c = 'A'; c <= 'Z'; c++)
+      {
+        <li>@Html.ActionLink(c.ToString(),
+                    "Index",
+                    "Author",
+                    new { letter = c, page = Model.PageNumber, pageSize = Model.PageSize },
+                    new { })
+        </li>
+      }
+    </ul>
+  </div>
+</div>
+

@@ -1,0 +1,18 @@
+﻿@model OpenDoors.Models.Bookmark
+
+@{
+  ViewBag.Title = Model.Title;
+  Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+<h2>@Model.Title</h2>
+<h3>by @Model.Author.Name</h3>
+
+@Html.Partial("_Meta", Model, ViewData)
+
+<br />
+<label>URL list for information</label>
+<p>
+  <a href="@Url.Content(Model.Url)">Work contents</a>
+</p>
+}

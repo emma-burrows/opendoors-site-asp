@@ -1,0 +1,359 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="od_sgfModel.Store" Alias="Self" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.1" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityContainer Name="od_sgfModelStoreContainer">
+          <EntitySet Name="archiveconfig" EntityType="od_sgfModel.Store.archiveconfig" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="od_authors" EntityType="od_sgfModel.Store.od_authors" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="od_chapters" EntityType="od_sgfModel.Store.od_chapters" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="od_stories" EntityType="od_sgfModel.Store.od_stories" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="od_bookmarks" EntityType="od_sgfModel.Store.od_bookmarks" store:Type="Tables" Schema="od_sgf" />
+        </EntityContainer>
+        <EntityType Name="archiveconfig">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="varchar" MaxLength="255" />
+          <Property Name="ODNote" Type="text" />
+          <Property Name="SendEmail" Type="bool" Nullable="false" />
+          <Property Name="PostWorks" Type="bool" Nullable="false" />
+          <Property Name="ItemsPerPage" Type="int" Nullable="false" />
+          <Property Name="Key" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="Archivist" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="CollectionName" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="Imported" Type="int" Nullable="false" />
+          <Property Name="NotImported" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="od_authors">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="email" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="imported" Type="bool" Nullable="false" />
+          <Property Name="doNotImport" Type="bool" Nullable="false" />
+        </EntityType>
+        <EntityType Name="od_chapters">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="Position" Type="bigint" />
+          <Property Name="Title" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="AuthorID" Type="int" Nullable="false" />
+          <Property Name="Text" Type="mediumtext" Nullable="false" />
+          <Property Name="Date" Type="date" Nullable="false" />
+          <Property Name="StoryID" Type="int" Nullable="false" />
+          <Property Name="Notes" Type="text" Nullable="false" />
+          <Property Name="url" Type="varchar" MaxLength="1024" />
+        </EntityType>
+        <EntityType Name="od_stories">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="title" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="summary" Type="longtext" />
+          <Property Name="authorid" Type="int" Nullable="false" />
+          <Property Name="rating" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="date" Type="date" Nullable="false" />
+          <Property Name="tags" Type="varchar" MaxLength="255" />
+          <Property Name="warnings" Type="varchar" MaxLength="255" />
+          <Property Name="notes" Type="longtext" />
+          <Property Name="fandoms" Type="varchar" MaxLength="255" />
+          <Property Name="characters" Type="varchar" MaxLength="255" />
+          <Property Name="relationships" Type="varchar" MaxLength="255" />
+          <Property Name="url" Type="varchar" MaxLength="255" />
+          <Property Name="imported" Type="bool" Nullable="false" />
+          <Property Name="doNotImport" Type="bool" Nullable="false" />
+          <Property Name="Ao3Url" Type="varchar" MaxLength="255" />
+        </EntityType>
+      <EntityType Name="od_bookmarks">
+        <Key>
+          <PropertyRef Name="id" />
+        </Key>
+        <Property Name="id" Type="int" Nullable="false" />
+        <Property Name="title" Type="varchar" Nullable="false" MaxLength="255" />
+        <Property Name="summary" Type="longtext" />
+        <Property Name="authorid" Type="int" Nullable="false" />
+        <Property Name="rating" Type="varchar" Nullable="false" MaxLength="255" />
+        <Property Name="date" Type="date" Nullable="false" />
+        <Property Name="tags" Type="varchar" MaxLength="255" />
+        <Property Name="warnings" Type="varchar" MaxLength="255" />
+        <Property Name="notes" Type="longtext" />
+        <Property Name="fandoms" Type="varchar" MaxLength="255" />
+        <Property Name="characters" Type="varchar" MaxLength="255" />
+        <Property Name="relationships" Type="varchar" MaxLength="255" />
+        <Property Name="url" Type="varchar" MaxLength="255" />
+        <Property Name="imported" Type="bool" Nullable="false" />
+        <Property Name="doNotImport" Type="bool" Nullable="false" />
+        <Property Name="Ao3Url" Type="varchar" MaxLength="255" />
+      </EntityType>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="od_sgfModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="Entities" p1:LazyLoadingEnabled="true">
+          <EntitySet Name="Authors" EntityType="od_sgfModel.Author" />
+          <EntitySet Name="Stories" EntityType="od_sgfModel.Story" />
+          <AssociationSet Name="authorsstories" Association="od_sgfModel.authorsstories">
+            <End Role="authors" EntitySet="Authors" />
+            <End Role="stories" EntitySet="Stories" />
+          </AssociationSet>
+          <EntitySet Name="Bookmarks" EntityType="od_sgfModel.Bookmark" />
+          <AssociationSet Name="authorsbookmarks" Association="od_sgfModel.authorsbookmarks">
+            <End Role="authors" EntitySet="Authors" />
+            <End Role="bookmarks" EntitySet="Bookmarks" />
+          </AssociationSet>
+          <EntitySet Name="Chapters" EntityType="od_sgfModel.Chapter" />
+          <AssociationSet Name="StoryChapter" Association="od_sgfModel.StoryChapter">
+            <End Role="Story" EntitySet="Stories" />
+            <End Role="Chapter" EntitySet="Chapters" />
+          </AssociationSet>
+          <EntitySet Name="ArchiveConfigs" EntityType="od_sgfModel.ArchiveConfig" />
+        </EntityContainer>
+        <EntityType Name="Author">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Email" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Imported" Type="Boolean" Nullable="false" />
+          <Property Name="DoNotImport" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="Stories" Relationship="od_sgfModel.authorsstories" FromRole="authors" ToRole="stories" />
+          <NavigationProperty Name="Bookmarks" Relationship="od_sgfModel.authorsbookmarks" FromRole="authors" ToRole="bookmarks" />
+        </EntityType>
+        <EntityType Name="Story">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Title" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Summary" Type="String" Nullable="false" MaxLength="1073741823" Unicode="false" FixedLength="false" />
+          <Property Name="AuthorID" Type="Int32" Nullable="false" />
+          <Property Name="Rating" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Date" Type="DateTime" Nullable="false" />
+          <Property Name="Tags" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Warnings" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Notes" Type="String" MaxLength="1073741823" Unicode="false" FixedLength="false" />
+          <Property Name="Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Imported" Type="Boolean" Nullable="false" />
+          <Property Name="DoNotImport" Type="Boolean" Nullable="false" />
+          <Property Name="Ao3Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsstories" FromRole="stories" ToRole="authors" />
+          <NavigationProperty Name="Chapters" Relationship="od_sgfModel.StoryChapter" FromRole="Story" ToRole="Chapter" />
+          <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Characters" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Relationships" MaxLength="255" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <Association Name="authorsstories">
+          <End Type="od_sgfModel.Author" Role="authors" Multiplicity="1" />
+          <End Type="od_sgfModel.Story" Role="stories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="authors">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="stories">
+              <PropertyRef Name="AuthorID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Bookmark">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Title" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Summary" Type="String" Nullable="false" MaxLength="1073741823" Unicode="false" FixedLength="false" />
+          <Property Name="AuthorID" Type="Int32" Nullable="false" />
+          <Property Name="Rating" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Date" Type="DateTime" Nullable="false" />
+          <Property Name="Tags" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Warnings" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Notes" Type="String" MaxLength="1073741823" Unicode="false" FixedLength="false" />
+          <Property Name="Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Imported" Type="Boolean" Nullable="false" />
+          <Property Name="DoNotImport" Type="Boolean" Nullable="false" />
+          <Property Name="Ao3Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsbookmarks" FromRole="bookmarks" ToRole="authors" />
+          <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Characters" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Relationships" MaxLength="255" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <Association Name="authorsbookmarks">
+          <End Type="od_sgfModel.Author" Role="authors" Multiplicity="1" />
+          <End Type="od_sgfModel.Bookmark" Role="bookmarks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="authors">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="bookmarks">
+              <PropertyRef Name="AuthorID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Chapter">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Type="Int32" Name="ID" Nullable="false" />
+          <Property Type="String" Name="Title" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="Int32" Name="AuthorID" Nullable="false" />
+          <Property Type="String" Name="Text" Nullable="false" MaxLength="16777215" FixedLength="false" Unicode="false" />
+          <Property Type="DateTime" Name="Date" Nullable="false" />
+          <Property Type="Int32" Name="StoryID" Nullable="false" />
+          <Property Type="String" Name="Notes" Nullable="false" MaxLength="65535" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Story" Relationship="od_sgfModel.StoryChapter" FromRole="Chapter" ToRole="Story" />
+          <Property Type="Int64" Name="Position" />
+          <Property Name="Url" Type="String" MaxLength="1024" Unicode="false" FixedLength="false" />
+        </EntityType>
+        <Association Name="StoryChapter">
+          <End Type="od_sgfModel.Story" Role="Story" Multiplicity="1" />
+          <End Type="od_sgfModel.Chapter" Role="Chapter" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Story">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Chapter">
+              <PropertyRef Name="StoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="ArchiveConfig">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Type="Int32" Name="id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="Name" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="ODNote" MaxLength="65535" FixedLength="false" Unicode="false" />
+          <Property Type="Boolean" Name="SendEmail" Nullable="false"/>
+          <Property Type="Boolean" Name="PostWorks" Nullable="false"/>
+          <Property Type="Int32" Name="ItemsPerPage" Nullable="false"/>
+          <Property Type="String" Name="Key" Nullable="false" MaxLength="45" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Archivist" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="CollectionName" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="Int32" Name="Imported" Nullable="false"/>
+          <Property Type="Int32" Name="NotImported" Nullable="false"/>
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="od_sgfModelStoreContainer" CdmEntityContainer="Entities">
+          <EntitySetMapping Name="Authors">
+            <EntityTypeMapping TypeName="od_sgfModel.Author">
+              <MappingFragment StoreEntitySet="od_authors">
+                <ScalarProperty Name="ID" ColumnName="id" />
+                <ScalarProperty Name="Name" ColumnName="name" />
+                <ScalarProperty Name="Email" ColumnName="email" />
+                <ScalarProperty Name="Imported" ColumnName="imported" />
+                <ScalarProperty Name="DoNotImport" ColumnName="doNotImport" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Stories">
+            <EntityTypeMapping TypeName="od_sgfModel.Story">
+              <MappingFragment StoreEntitySet="od_stories">
+                <ScalarProperty Name="Relationships" ColumnName="relationships" />
+                <ScalarProperty Name="Characters" ColumnName="characters" />
+                <ScalarProperty Name="Fandoms" ColumnName="fandoms" />
+                <ScalarProperty Name="ID" ColumnName="id" />
+                <ScalarProperty Name="Title" ColumnName="title" />
+                <ScalarProperty Name="Summary" ColumnName="summary" />
+                <ScalarProperty Name="AuthorID" ColumnName="authorid" />
+                <ScalarProperty Name="Rating" ColumnName="rating" />
+                <ScalarProperty Name="Date" ColumnName="date" />
+                <ScalarProperty Name="Tags" ColumnName="tags" />
+                <ScalarProperty Name="Warnings" ColumnName="warnings" />
+                <ScalarProperty Name="Notes" ColumnName="notes" />
+                <ScalarProperty Name="Url" ColumnName="url" />
+                <ScalarProperty Name="Imported" ColumnName="imported" />
+                <ScalarProperty Name="DoNotImport" ColumnName="doNotImport" />
+                <ScalarProperty Name="Ao3Url" ColumnName="Ao3Url" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bookmarks">
+            <EntityTypeMapping TypeName="od_sgfModel.Bookmark">
+              <MappingFragment StoreEntitySet="od_bookmarks">
+                <ScalarProperty Name="Relationships" ColumnName="relationships" />
+                <ScalarProperty Name="Characters" ColumnName="characters" />
+                <ScalarProperty Name="Fandoms" ColumnName="fandoms" />
+                <ScalarProperty Name="ID" ColumnName="id" />
+                <ScalarProperty Name="Title" ColumnName="title" />
+                <ScalarProperty Name="Summary" ColumnName="summary" />
+                <ScalarProperty Name="AuthorID" ColumnName="authorid" />
+                <ScalarProperty Name="Rating" ColumnName="rating" />
+                <ScalarProperty Name="Date" ColumnName="date" />
+                <ScalarProperty Name="Tags" ColumnName="tags" />
+                <ScalarProperty Name="Warnings" ColumnName="warnings" />
+                <ScalarProperty Name="Notes" ColumnName="notes" />
+                <ScalarProperty Name="Url" ColumnName="url" />
+                <ScalarProperty Name="Imported" ColumnName="imported" />
+                <ScalarProperty Name="DoNotImport" ColumnName="doNotImport" />
+                <ScalarProperty Name="Ao3Url" ColumnName="Ao3Url" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Chapters">
+            <EntityTypeMapping TypeName="od_sgfModel.Chapter">
+              <MappingFragment StoreEntitySet="od_chapters">
+                <ScalarProperty Name="Url" ColumnName="url" />
+                <ScalarProperty Name="Position" ColumnName="Position" />
+                <ScalarProperty Name="Notes" ColumnName="Notes" />
+                <ScalarProperty Name="StoryID" ColumnName="StoryID" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
+                <ScalarProperty Name="Text" ColumnName="Text" />
+                <ScalarProperty Name="AuthorID" ColumnName="AuthorID" />
+                <ScalarProperty Name="Title" ColumnName="Title" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ArchiveConfigs">
+            <EntityTypeMapping TypeName="od_sgfModel.ArchiveConfig">
+              <MappingFragment StoreEntitySet="archiveconfig">
+                <ScalarProperty Name="NotImported" ColumnName="NotImported" />
+                <ScalarProperty Name="Imported" ColumnName="Imported" />
+                <ScalarProperty Name="CollectionName" ColumnName="CollectionName" />
+                <ScalarProperty Name="Archivist" ColumnName="Archivist" />
+                <ScalarProperty Name="Key" ColumnName="Key" />
+                <ScalarProperty Name="ItemsPerPage" ColumnName="ItemsPerPage" />
+                <ScalarProperty Name="PostWorks" ColumnName="PostWorks" />
+                <ScalarProperty Name="SendEmail" ColumnName="SendEmail" />
+                <ScalarProperty Name="ODNote" ColumnName="ODNote" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

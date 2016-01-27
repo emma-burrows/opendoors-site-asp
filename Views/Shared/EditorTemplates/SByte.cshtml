@@ -1,0 +1,9 @@
+﻿@{
+    sbyte? value = null;
+    if (ViewData.Model != null)
+    {
+      value = (sbyte)(ViewData.Model == 1 ? 1 : 0);
+    }
+}
+
+@Html.CheckBox("", value == 1 ? true : false, new {@class = "check-box"})

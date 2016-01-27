@@ -1,0 +1,39 @@
+@model OpenDoors.Models.ArchiveConfig
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+<h2>Details</h2>
+
+<fieldset>
+    <legend>ArchiveConfig</legend>
+    @{
+      var excluded = new List<String>() { "id", "Key" };
+    }
+    @foreach (var property in ViewData.ModelMetadata.Properties.Where(p => !excluded.Contains(p.PropertyName)))
+    {
+      <div class="form-group">
+          <label for="property.PropertyName" style="width: 150px">@(property.DisplayName??property.PropertyName)</label>
+          @{
+            string str = "";
+            if (property.Model != null && property.Model.GetType() == typeof(SByte)) 
+            {
+              str = property.SimpleDisplayText == "0" ? "No" : "Yes";
+            }
+            else
+            {
+              str = property.SimpleDisplayText;
+            }
+          }
+          @str
+      </div>
+    }
+</fieldset>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.id }, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Back to List",
+    "Index",
+    "Author", new { }, new { @class = "btn btn-default" })
+</p>

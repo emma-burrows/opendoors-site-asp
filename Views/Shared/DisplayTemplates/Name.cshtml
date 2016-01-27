@@ -1,0 +1,5 @@
+﻿@inherits System.Web.Mvc.WebViewPage<string>
+    <div class="form-group">
+      <label for="example-@Model.ToString()">@Html.DisplayNameFor(m => m)</label>
+      <input type="email" class="form-control" id="example-@Model.ToString()" placeholder="@Html.DisplayTextFor(m => m)">
+  </div>

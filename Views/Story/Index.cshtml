@@ -1,0 +1,18 @@
+﻿@model PagedList.IPagedList<OpenDoors.Models.Story>
+@using PagedList;
+@using PagedList.Mvc;
+
+@{
+  var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
+  ViewBag.Title = config.Name;
+  Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+  <div class="center">
+    @Html.PagedListPager(Model, page => Url.Action(ViewContext.RouteData.Values["Action"].ToString(), new { page, pageSize = Model.PageSize }))
+  </div>
+
+@foreach (var story in Model)
+{
+  @Html.Partial("_Meta", story, ViewData)
+}

@@ -1,0 +1,116 @@
+﻿@{
+  bool doNotImport = Convert.ToBoolean(Model.DoNotImport);
+  bool imported = Convert.ToBoolean(Model.Imported);
+  bool isAuthorView = Convert.ToBoolean(HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString() == "Author");
+  int id = Model.ID;
+  string cssClass = imported ? "imported" : "";
+  cssClass += doNotImport ? " donotimport" : "";
+  cssClass += " " + ViewData["type"];
+
+  <div class="row storytitlediv @cssClass" id="@id">
+    <div class="col-lg-6 col-md-7 col-sm-6 storytitle">
+      @if (String.IsNullOrEmpty(Model.Url) && Model.Chapters.Count > 0)
+      {
+        @*Html.ActionLink((string)OpenDoors.StringHelper.notLibrary(Model.Title),
+            "Details",
+            ViewData["type"].ToString(),
+            new { id = Model.ID },
+            new { })*@
+        <span>@Model.Title</span>
+      }
+      else
+      {
+        if (ViewData["type"] == "Story")
+        {
+        <a href="@Url.Content("~/works/" + Model.Url)">@Model.Title</a>
+        }
+        else
+        {
+        <a href="@Url.Content(Model.Url)">@Model.Title</a>
+        }
+      }
+      @if (!isAuthorView)
+      {
+        <span>by <b>@Model.Author.Name</b></span>
+      }<br />
+      <span class="summary"><b>[@Model.Rating] @Model.Warnings
+        @if (!String.IsNullOrEmpty(Model.Relationships))
+        { <span>- @Model.Relationships</span> }
+        <br />
+        @Model.Tags</b></span><br />
+      <span class="summary">@Html.Raw(Model.Summary)</span><br />
+
+      <ol>
+      @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
+      {
+        if (String.IsNullOrEmpty(chapter.Url))
+        {
+          <li>
+          @Html.ActionLink((string)OpenDoors.StringHelper.notLibrary(chapter.Title),
+            "Details",
+            "Chapter",
+            new { id = chapter.ID },
+            new { })
+          </li>
+        }
+        else
+        {
+          <li><a href="@Url.Content("~/works/" + chapter.Url)">@chapter.Title</a></li>
+        }
+      }
+      </ol>
+
+      @if (TempData["result"] != null)
+      {
+        var result = (OpenDoors.Code.ArchiveResult)TempData["result"];
+        if (result.StoryResponses.ContainsKey(Model.ID))
+        {
+        <div class="message-info @(result.StoryResponses[Model.ID].Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
+          <ul>
+            @foreach (string s in result.StoryResponses[Model.ID].Messages)
+            {
+              <li>@Html.Raw(s)</li>
+            }
+          </ul>
+        </div>
+        }
+      }
+    </div>
+
+@*    @if (ViewData["type"] == "Story")
+    {
+    *@<div class="col-lg-6 col-md-5 col-sm-6 links">
+      @if (imported)
+      {
+        if (!String.IsNullOrEmpty(Model.Ao3Url))
+        {
+        <a href="@Model.Ao3Url" target="_blank">view on AO3</a>
+        }
+      }
+      else if (!doNotImport)
+      {
+        @Html.ActionLink("import", "Import", "Author",
+            new
+            {
+              id = Model.ID,
+              letter = Request.QueryString["letter"],
+              page = Request.QueryString["page"],
+              pageSize = Request.QueryString["pageSize"],
+              type = ViewData["type"]
+            },
+            new { @class = "btn btn-info" })
+      }
+      <span></span>
+
+      @Html.ActionLink(imported ? "mark NOT imported" : "mark as imported", "Edit", "Story",
+            new { id = Model.ID, imported = !imported },
+            new { @class = "btn btn-success" })
+      <span></span>
+
+      @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", "Edit", "Story",
+            new { id = Model.ID, donotimport = !doNotImport },
+            new { @class = "btn btn-warning", title = "Mark as to be imported" })
+    </div>
+    @*}*@
+  </div>
+}

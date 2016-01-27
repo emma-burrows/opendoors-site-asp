@@ -1,0 +1,18 @@
+﻿@model PagedList.IPagedList<OpenDoors.Models.Bookmark>
+@using PagedList;
+@using PagedList.Mvc;
+
+@{
+  var config = (Isf.Models.ArchiveConfig)TempData["config"];
+  ViewBag.Title = config.Name;
+  Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+  <div class="center">
+    @Html.PagedListPager(Model, page => Url.Action("Index", new { page, pageSize = Model.PageSize }))
+  </div>
+
+@foreach (var bookmark in Model)
+{
+  @Html.Partial("_Meta", story, ViewData)
+}

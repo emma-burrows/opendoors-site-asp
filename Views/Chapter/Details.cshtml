@@ -1,0 +1,54 @@
+﻿@model OpenDoors.Models.Chapter
+
+@{
+  ViewBag.Title = Model.Title;
+  Layout = "~/Views/_LayoutPage.cshtml";
+}
+
+<h2>@Model.Title</h2>
+
+<fieldset>
+
+  <div class="form-group">
+    <label for="property.PropertyName" style="width: 150px">Title:</label> @Html.DisplayFor(model => model.Story.Title)
+  </div>
+
+  @if ((Model.Position == 0 || Model.Position == 1) && TempData["config"] != null)
+  {
+    var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
+    <div class="form-group">
+      <label for="property.PropertyName" style="width: 150px">Note:</label> @Html.Raw(config.ODNote)
+    </div>
+  }
+
+  <div class="form-group">
+    <label for="property.PropertyName" style="width: 150px">Summary:</label>
+    @Html.DisplayFor(model => model.Story.Summary)
+  </div>
+
+  <div class="form-group">
+    <label for="property.PropertyName" style="width: 150px">Date:</label> @Html.DisplayFor(model => model.Story.Date)
+  </div>
+
+  <div class="form-group">
+    <label for="property.PropertyName" style="width: 150px">Chapter Title:</label> @Html.DisplayFor(model => model.Title)
+  </div>
+
+  <div class="form-group">
+    <label for="property.PropertyName" style="width: 150px">Chapter Number:</label>
+    @Html.DisplayFor(model => model.Position)
+  </div>
+
+  <div class="form-group">
+    <label for="property.PropertyName" style="width: 150px">Chapter posted</label> @Html.DisplayFor(model => model.Date)
+  </div>
+</fieldset>
+
+<div class="chapter-content">
+  @Html.Raw(Model.Text)
+</div>
+
+<p>
+  @Html.ActionLink("Back to List", "Index")
+</p>
+

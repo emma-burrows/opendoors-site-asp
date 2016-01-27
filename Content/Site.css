@@ -1,0 +1,74 @@
+﻿body
+{
+  margin-left: 10px;
+}
+
+article
+{
+  border: dotted darkgreen 1px;
+  margin-top: 12px;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+/* info and errors */
+.message-info {
+    border: 1px solid;
+    clear: both;
+    padding: 10px 20px;
+}
+
+/******* AO3 specific *******/
+.chapter-content {
+  margin-top: 20px;
+}
+
+.storytitlediv {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+  .storytitlediv .summary {
+    font-weight: normal;
+    font-size: small;
+  }
+  .storytitlediv .links {
+    vertical-align: top;
+  }
+
+.imported
+{
+  background-color: lightgray;
+  border-radius: 10px;
+  text-decoration: none;
+  margin-left: 0px;
+  margin-right: 5px;
+  padding: 2px 10px;
+  color: darkgray;
+}
+  .storytitle a.imported  {
+    color: darkgrey;
+    font-weight: normal;
+    background-color: transparent;
+    padding-left: 2px;
+  }
+
+.donotimport
+{
+  background-color: #f7d0cb;
+  border-radius: 10px;
+  text-decoration: none;
+  margin-left: 0px;
+  margin-right: 5px;
+  padding: 2px 10px;
+  color: gray;
+}
+  .donotimport .storytitle {
+    color: darkgray;
+    font-weight: normal;
+    background-color: transparent;
+    padding-left: 2px;
+  }
+
+.extra-space {
+  margin-top: 20px;
+}
