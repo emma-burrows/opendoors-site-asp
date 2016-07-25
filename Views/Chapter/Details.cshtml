@@ -3,6 +3,7 @@
 @{
   ViewBag.Title = Model.Title;
   Layout = "~/Views/_LayoutPage.cshtml";
+  Boolean IsFirstChapter = Model.Position == 0 || Model.Position == 1;
 }
 
 <h2>@Model.Title</h2>
@@ -13,7 +14,7 @@
     <label for="property.PropertyName" style="width: 150px">Title:</label> @Html.DisplayFor(model => model.Story.Title)
   </div>
 
-  @if ((Model.Position == 0 || Model.Position == 1) && TempData["config"] != null)
+  @if (IsFirstChapter && TempData["config"] != null)
   {
     var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
     <div class="form-group">
@@ -27,7 +28,13 @@
   </div>
 
   <div class="form-group">
-    <label for="property.PropertyName" style="width: 150px">Date:</label> @Html.DisplayFor(model => model.Story.Date)
+    @if(IsFirstChapter) {
+      <label for="property.PropertyName" style="width: 150px">Date:</label> 
+        if(Model.Story.Date != null) { Html.DisplayFor(model => model.Story.Date); }
+    } else {
+      <label for="property.PropertyName" style="width: 150px">Date:</label> 
+        if(Model.Story.Updated != null) { Html.DisplayFor(model => model.Story.Updated); }
+    }
   </div>
 
   <div class="form-group">
@@ -39,16 +46,24 @@
     @Html.DisplayFor(model => model.Position)
   </div>
 
+  @if (!String.IsNullOrEmpty(Model.Date.ToString()))
+  {
   <div class="form-group">
     <label for="property.PropertyName" style="width: 150px">Chapter posted</label> @Html.DisplayFor(model => model.Date)
   </div>
+  }
 </fieldset>
 
-<div class="chapter-content">
+<div class="chapter-content" style="white-space: pre-line">
+   @if(!Model.Notes.IsEmpty()) {
+      <div class="form-group">
+        <label for="property.PropertyName" style="width: 150px">Author's note:</label> @Html.DisplayFor(model => model.Notes)
+      </div>
+      
+      <hr />
+
+    }
   @Html.Raw(Model.Text)
 </div>
 
-<p>
-  @Html.ActionLink("Back to List", "Index")
-</p>
 

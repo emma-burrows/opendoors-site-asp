@@ -6,37 +6,44 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using OpenDoors.Models;
+using System.Collections.Specialized;
+using System.Web.Configuration;
 
 namespace OpenDoors.Controllers
 {
     public class ConfigController : Controller
     {
         private Entities db = new Entities();
+        
 
         //
         // GET: /Config/Details/5
 
-        public ActionResult Details(int id = 2)
+        public ActionResult Details(int id = 4)
         {
-            ArchiveConfig archiveconfig = db.ArchiveConfigs.Find(id);
-            if (archiveconfig == null)
-            {
-                return HttpNotFound();
-            }
-            return View(archiveconfig);
+          NameValueCollection webConfig = (NameValueCollection)WebConfigurationManager.GetSection("ArchiveSettings");
+          String key = webConfig["Key"];
+          ArchiveConfig archiveconfig = db.ArchiveConfigs.Where(c => c.Key == key).First();
+          if (archiveconfig == null)
+          {
+              return HttpNotFound();
+          }
+          return View(archiveconfig);
         }
 
         //
         // GET: /Config/Edit/5
 
-        public ActionResult Edit(int id = 2)
+        public ActionResult Edit(int id = 4)
         {
-            ArchiveConfig archiveconfig = db.ArchiveConfigs.Find(id);
-            if (archiveconfig == null)
-            {
-                return HttpNotFound();
-            }
-            return View(archiveconfig);
+          NameValueCollection webConfig = (NameValueCollection)WebConfigurationManager.GetSection("ArchiveSettings");
+          String key = webConfig["Key"];
+          ArchiveConfig archiveconfig = db.ArchiveConfigs.Where(c => c.Key == key).First();
+          if (archiveconfig == null)
+          {
+              return HttpNotFound();
+          }
+          return View(archiveconfig);
         }
 
         //

@@ -6,12 +6,14 @@
   var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
   ViewBag.Title = config.Name + " Authors";
   Layout = "~/Views/_LayoutPage.cshtml";
+  var letters = (List<String>)TempData["letters"];
 }
 
 <div class="center">
   <div class="pagination-container">
     <ul class="pagination">
-      @for (char c = 'A'; c <= 'Z'; c++)
+    
+      @foreach(string c in letters)
       {
         <li>@Html.ActionLink(c.ToString(),
                     "Index",
@@ -31,6 +33,7 @@
 <div class="row">
   @foreach (var item in Model.OrderBy(item => item.Name))
   {
+  if(item.Bookmarks.Count > 0 || item.Stories.Count > 0) {
     bool doNotImport = Convert.ToBoolean(item.DoNotImport);
     bool imported = Convert.ToBoolean(item.Imported);
     string cssClass = imported ? "imported" : "";
@@ -93,6 +96,7 @@
       }
 
     </article>
+    }
   }
 </div>
 
@@ -100,7 +104,7 @@
 <div class="center">
   <div class="pagination-container">
     <ul class="pagination">
-      @for (char c = 'A'; c <= 'Z'; c++)
+      @foreach(string c in letters)
       {
         <li>@Html.ActionLink(c.ToString(),
                     "Index",

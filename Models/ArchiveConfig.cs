@@ -11,11 +11,13 @@ namespace OpenDoors.Models
 {
     using System;
     using System.Collections.Generic;
+  	using System.Web.Mvc;
     
     public partial class ArchiveConfig
     {
         public int id { get; set; }
         public string Name { get; set; }
+        [AllowHtml]
         public string ODNote { get; set; }
         public bool SendEmail { get; set; }
         public bool PostWorks { get; set; }

@@ -11,7 +11,7 @@ using OtwArchive;
 using OpenDoors.Code;
 using OtwArchive.Models.Request;
 
-namespace henneth1.Controllers
+namespace OpenDoors.Controllers
 {
   public class AuthorController : Controller
   {
@@ -31,7 +31,16 @@ namespace henneth1.Controllers
     {
       TempData["config"] = config;
       String tableName = config.Key + "_authors";
-      List<Author> authors = db.Authors.SqlQuery("SELECT * FROM " + tableName + " WHERE Name LIKE '" + letter + "%' ORDER BY Name").ToList<Author>();
+      TempData["letters"] = db.Authors
+                                .GroupBy(p => p.Name.Substring(0, 1))
+                                .Select(x => x.Key.ToUpper())
+                                .OrderBy(x => x)
+                                .ToList();
+      List<Author> authors = db.Authors
+        .SqlQuery("SELECT * FROM " + tableName + " WHERE Name LIKE '" + letter + "%' ORDER BY Name")
+        .ToList<Author>()
+        .Where(a => a.Stories.Count + a.Bookmarks.Count > 0)
+        .ToList<Author>();
       return View(authors.OrderBy(i => i.Name).ToPagedList(page, pageSize));
     }
 
@@ -39,6 +48,11 @@ namespace henneth1.Controllers
                                ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       TempData["config"] = config;
+      TempData["letters"] = db.Authors
+                                .GroupBy(p => p.Name.Substring(0, 1))
+                                .Select(x => x.Key.ToUpper())
+                                .OrderBy(x => x)
+                                .ToList();
       TempData["result"] = archive.importMany(new int[] { id }, this.Request.RequestContext, type);
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });
     }
@@ -46,6 +60,11 @@ namespace henneth1.Controllers
     public ActionResult ImportNone(int id, bool doNotImport, string letter = "A", int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
+      TempData["letters"] = db.Authors
+                          .GroupBy(p => p.Name.Substring(0, 1))
+                          .Select(x => x.Key.ToUpper())
+                          .OrderBy(x => x)
+                          .ToList();
       var author = db.Authors.Find(id);
       author.DoNotImport = doNotImport;
       foreach (Story s in db.Authors.Find(id).Stories.Where(s => s.DoNotImport == false))
@@ -68,6 +87,11 @@ namespace henneth1.Controllers
                                   ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       TempData["config"] = config;
+      TempData["letters"] = db.Authors
+                          .GroupBy(p => p.Name.Substring(0, 1))
+                          .Select(x => x.Key.ToUpper())
+                          .OrderBy(x => x)
+                          .ToList();
       int[] ids = new int[] {};
       if (type == ImportSettings.ImportType.Work)
       {
@@ -78,9 +102,22 @@ namespace henneth1.Controllers
         ids = db.Authors.Find(id).Bookmarks.Where(b => b.Imported == false).Select(b => b.ID).ToArray();
       }
       if (ids.Count() == 0) {
-        TempData["result"] = new ArchiveResult(new List<String>() { "All works are already marked as imported" }, new Dictionary<int,StoryResponse>());
+        if (type == ImportSettings.ImportType.Bookmark) {
+          TempData["result"] =
+            new ArchiveResult(
+                new List<String>() { "All bookmarks are already marked as imported" },
+                null,
+                new Dictionary<int, BookmarkResponse>());
+        }
+        else {
+          TempData["result"] = 
+            new ArchiveResult(
+                new List<String>() { "All works are already marked as imported" }, 
+                new Dictionary<int,StoryResponse>(),
+                null);
+        }
       } else {
-        TempData["result"] = archive.importMany(ids, Request.RequestContext);
+        TempData["result"] = archive.importMany(ids, Request.RequestContext, type);
       }
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });
     }
@@ -88,6 +125,11 @@ namespace henneth1.Controllers
     public ActionResult CheckAll(int id, string letter = "A", int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
+      TempData["letters"] = db.Authors
+                          .GroupBy(p => p.Name.Substring(0, 1))
+                          .Select(x => x.Key.ToUpper())
+                          .OrderBy(x => x)
+                          .ToList();
       int[] ids = db.Authors.Find(id).Stories.Select(s => s.ID).ToArray();
       TempData["result"] = archive.checkMany(ids, Request.RequestContext);
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });

@@ -18,7 +18,7 @@ namespace OpenDoors.Models
         public string Title { get; set; }
         public int AuthorID { get; set; }
         public string Text { get; set; }
-        public System.DateTime Date { get; set; }
+        public Nullable<System.DateTime> Date { get; set; }
         public int StoryID { get; set; }
         public string Notes { get; set; }
         public Nullable<long> Position { get; set; }

@@ -42,6 +42,7 @@ namespace OpenDoors.Code
       ArchiveSettings.Archivist           = config.Archivist;
       ArchiveSettings.SendClaimEmails     = config.SendEmail;
       ArchiveSettings.PostWithoutPreview  = config.PostWorks;
+      ArchiveSettings.Encoding            = "UTF-8";
 
       archive = new ArchiveClient(ArchiveSettings);
     }
@@ -50,33 +51,37 @@ namespace OpenDoors.Code
     // =============================================
 
     /// <summary>
-    /// Import stories
+    /// Import stories or bookmarks
     /// </summary>
-    /// <param name="ids">Stories to import</param>
+    /// <param name="ids">Stories or bookmarks to import</param>
     /// <param name="requestContext">HTTP request context (to retrieve host)</param>
-    /// <returns>Archive results with the final message, timing and list of story messages</returns>
-    public ArchiveResult importMany(int[] ids, RequestContext requestContext,
+    /// <returns>Archive results with the final message, timing and list of story or bookmark messages</returns>
+    public ArchiveResult importMany(int[] ids, RequestContext requestContext, 
                                     ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       List<String> messages = new List<string>();
       Dictionary<int, StoryResponse> workResults = new Dictionary<int, StoryResponse>();
+      Dictionary<int, BookmarkResponse> bookmarkResults = new Dictionary<int, BookmarkResponse>();
 
       ImportRequest workimport = new ImportRequest();
-      workimport.Type = type;
       workimport.SendClaimEmails = ArchiveSettings.SendClaimEmails;
-      //TODO due to bug in Archive
       workimport.PostWithoutPreview = ArchiveSettings.PostWithoutPreview;
-      workimport.Works = new List<IRequestItem>();
 
-      foreach (int id in ids)
-      {
-        if (type == ImportSettings.ImportType.Bookmark)
+      // Bookmarks
+      if (type == ImportSettings.ImportType.Bookmark) {
+        workimport.Bookmarks = new List<IRequestItem>();
+        foreach (int id in ids)
         {
           Bookmark bookmark = db.Bookmarks.Find(id);
           if (!bookmark.DoNotImport)
-            workimport.Works.Add(extBookmark(bookmark, requestContext));
+            workimport.Bookmarks.Add(extBookmark(bookmark, requestContext));
         }
-        else
+      }
+      else
+      {
+      // Works
+        workimport.Works = new List<IRequestItem>();
+        foreach (int id in ids) 
         {
           Story story = db.Stories.Find(id);
           if (!story.DoNotImport)
@@ -85,7 +90,7 @@ namespace OpenDoors.Code
       }
 
       var stopwatch = Stopwatch.StartNew();
-      ImportResponse result = archive.import(workimport);
+      ImportResponse result = archive.import(workimport, type);
       stopwatch.Stop();
       var elapsed = stopwatch.Elapsed;
 
@@ -95,6 +100,7 @@ namespace OpenDoors.Code
             String.Format("<p>Processing time: {0:00}m{1:00}s{2:00}.</p>", elapsed.Minutes, elapsed.Seconds, elapsed.Milliseconds)
           };
 
+      // Stories
       if (result.Works != null && result.Works.Count() == ids.Count())
       {
 
@@ -123,13 +129,41 @@ namespace OpenDoors.Code
           }
         }
       }
-      else
+      
+      // bookmarks
+      if (result.Bookmarks != null && result.Bookmarks.Count() == ids.Count())
+      {
+        bookmarkResults =
+            ids.Zip(result.Bookmarks, (id, bookmark) => new { id, bookmark })
+               .ToDictionary(
+                item => item.id,
+                item => new BookmarkResponse(item.bookmark.Status, item.bookmark.ArchiveUrl, item.bookmark.OriginalUrl, item.bookmark.Messages));
+
+        foreach (KeyValuePair<int, BookmarkResponse> entry in bookmarkResults)
+        {
+          BookmarkResponse bookmarkResponse = entry.Value;
+          Bookmark bookmark = db.Bookmarks.Find(entry.Key);
+          if (bookmarkResponse.Status == "created")
+          {
+            bookmark.Imported = true;
+            bookmark.Ao3Url = bookmarkResponse.ArchiveUrl;
+            
+            db.Entry(bookmark).State = EntityState.Modified;
+          }
+          else
+          {
+            messages.Add("error");
+          }
+        }
+      }
+      
+      if (result.Works == null && result.Bookmarks == null)
       {
         messages.Add("error");
       }
       db.SaveChanges();
 
-      return new ArchiveResult(messages, workResults);
+      return new ArchiveResult(messages, workResults, bookmarkResults);
     }
 
     /// <summary>
@@ -149,7 +183,7 @@ namespace OpenDoors.Code
         storiesWithResponses.Add(s.ID, new StoryResponse("updated", "", "", new List<string>() { "Updated " + s.Title + "." }));
       }
       db.SaveChanges();
-      return new ArchiveResult(new List<String>() { "Updated import status" }, storiesWithResponses);
+      return new ArchiveResult(new List<String>() { "Updated import status" }, storiesWithResponses, null);
     }
 
     /// <summary>
@@ -225,7 +259,7 @@ namespace OpenDoors.Code
           db.SaveChanges();
         }
       }
-      return new ArchiveResult(messages, storiesWithResponses);
+      return new ArchiveResult(messages, storiesWithResponses, null);
     }
 
     // HELPERS
@@ -240,9 +274,15 @@ namespace OpenDoors.Code
       external.Fandoms              = story.Fandoms;
       external.Relationships        = story.Relationships;
       external.Characters           = story.Characters;
+      external.Categories           = story.Categories;
       external.AdditionalTags       = story.Tags;
       external.Rating               = story.Rating;
       external.Title                = story.Title;
+      if (!String.IsNullOrEmpty(story.Notes))
+      {
+        external.Notes              = story.Notes + "<br/><br/>";
+      }
+      external.Notes               += config.ODNote;
       external.Warnings             = story.Warnings;
 
       external.ChapterUrls = new List<Uri>();
@@ -275,18 +315,19 @@ namespace OpenDoors.Code
       UrlHelper urlHelper = new UrlHelper(requestContext);
 
       BookmarkImportRequest external = new BookmarkImportRequest();
-      ExternalWork work = new ExternalWork();
-      work.Author = author.Name;
-      work.Summary = bookmark.Summary;
-      work.FandomString = bookmark.Fandoms;
-      work.RelationshipString = bookmark.Relationships;
-      work.CharacterString = bookmark.Characters;
-      work.Title = bookmark.Title;
-      work.RatingString = bookmark.Rating;
+      external.Author = author.Name;
+      external.Url = bookmark.Url;
+      external.Summary = bookmark.Summary;
+      external.FandomString = bookmark.Fandoms;
+      external.RelationshipString = bookmark.Relationships;
+      external.CharacterString = bookmark.Characters;
+      external.CategoryString = bookmark.Categories;
+      external.Title = bookmark.Title;
+      external.RatingString = bookmark.Rating;
+      external.CollectionNames = config.CollectionName;
       // work.WarningString = bookmark.Warnings;
       external.TagString = bookmark.Tags;
       external.Notes = bookmark.Notes;
-      external.External = work;
 
       return external;
     }

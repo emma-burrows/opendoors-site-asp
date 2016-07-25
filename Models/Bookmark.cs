@@ -19,7 +19,8 @@ namespace OpenDoors.Models
         public string Summary { get; set; }
         public int AuthorID { get; set; }
         public string Rating { get; set; }
-        public System.DateTime Date { get; set; }
+        public Nullable<System.DateTime> Date { get; set; }
+        public string Categories { get; set; }
         public string Tags { get; set; }
         public string Warnings { get; set; }
         public string Notes { get; set; }

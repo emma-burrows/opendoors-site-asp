@@ -47,7 +47,7 @@
           <Property Name="Title" Type="varchar" Nullable="false" MaxLength="255" />
           <Property Name="AuthorID" Type="int" Nullable="false" />
           <Property Name="Text" Type="mediumtext" Nullable="false" />
-          <Property Name="Date" Type="date" Nullable="false" />
+          <Property Name="Date" Type="date" Nullable="true" />
           <Property Name="StoryID" Type="int" Nullable="false" />
           <Property Name="Notes" Type="text" Nullable="false" />
           <Property Name="url" Type="varchar" MaxLength="1024" />
@@ -61,7 +61,9 @@
           <Property Name="summary" Type="longtext" />
           <Property Name="authorid" Type="int" Nullable="false" />
           <Property Name="rating" Type="varchar" Nullable="false" MaxLength="255" />
-          <Property Name="date" Type="date" Nullable="false" />
+          <Property Name="date" Type="date" Nullable="true" />
+          <Property Name="updated" Type="date" Nullable="true" />
+          <Property Name="categories" Type="varchar" MaxLength="45" />
           <Property Name="tags" Type="varchar" MaxLength="255" />
           <Property Name="warnings" Type="varchar" MaxLength="255" />
           <Property Name="notes" Type="longtext" />
@@ -82,7 +84,8 @@
         <Property Name="summary" Type="longtext" />
         <Property Name="authorid" Type="int" Nullable="false" />
         <Property Name="rating" Type="varchar" Nullable="false" MaxLength="255" />
-        <Property Name="date" Type="date" Nullable="false" />
+        <Property Name="date" Type="date" Nullable="true" />
+        <Property Name="categories" Type="varchar" MaxLength="45" />
         <Property Name="tags" Type="varchar" MaxLength="255" />
         <Property Name="warnings" Type="varchar" MaxLength="255" />
         <Property Name="notes" Type="longtext" />
@@ -138,7 +141,9 @@
           <Property Name="Summary" Type="String" Nullable="false" MaxLength="1073741823" Unicode="false" FixedLength="false" />
           <Property Name="AuthorID" Type="Int32" Nullable="false" />
           <Property Name="Rating" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
-          <Property Name="Date" Type="DateTime" Nullable="false" />
+          <Property Name="Date" Type="DateTime" Nullable="true" />
+          <Property Name="Updated" Type="DateTime" Nullable="true" />
+          <Property Name="Categories" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
           <Property Name="Tags" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Warnings" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Notes" Type="String" MaxLength="1073741823" Unicode="false" FixedLength="false" />
@@ -173,7 +178,8 @@
           <Property Name="Summary" Type="String" Nullable="false" MaxLength="1073741823" Unicode="false" FixedLength="false" />
           <Property Name="AuthorID" Type="Int32" Nullable="false" />
           <Property Name="Rating" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
-          <Property Name="Date" Type="DateTime" Nullable="false" />
+          <Property Name="Date" Type="DateTime" Nullable="true" />
+          <Property Name="Categories" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
           <Property Name="Tags" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Warnings" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Notes" Type="String" MaxLength="1073741823" Unicode="false" FixedLength="false" />
@@ -206,7 +212,7 @@
           <Property Type="String" Name="Title" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Type="Int32" Name="AuthorID" Nullable="false" />
           <Property Type="String" Name="Text" Nullable="false" MaxLength="16777215" FixedLength="false" Unicode="false" />
-          <Property Type="DateTime" Name="Date" Nullable="false" />
+          <Property Type="DateTime" Name="Date" Nullable="true" />
           <Property Type="Int32" Name="StoryID" Nullable="false" />
           <Property Type="String" Name="Notes" Nullable="false" MaxLength="65535" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="Story" Relationship="od_sgfModel.StoryChapter" FromRole="Chapter" ToRole="Story" />
@@ -270,6 +276,8 @@
                 <ScalarProperty Name="AuthorID" ColumnName="authorid" />
                 <ScalarProperty Name="Rating" ColumnName="rating" />
                 <ScalarProperty Name="Date" ColumnName="date" />
+                <ScalarProperty Name="Updated" ColumnName="updated" />
+                <ScalarProperty Name="Categories" ColumnName="categories" />
                 <ScalarProperty Name="Tags" ColumnName="tags" />
                 <ScalarProperty Name="Warnings" ColumnName="warnings" />
                 <ScalarProperty Name="Notes" ColumnName="notes" />
@@ -292,6 +300,7 @@
                 <ScalarProperty Name="AuthorID" ColumnName="authorid" />
                 <ScalarProperty Name="Rating" ColumnName="rating" />
                 <ScalarProperty Name="Date" ColumnName="date" />
+                <ScalarProperty Name="Categories" ColumnName="categories" />
                 <ScalarProperty Name="Tags" ColumnName="tags" />
                 <ScalarProperty Name="Warnings" ColumnName="warnings" />
                 <ScalarProperty Name="Notes" ColumnName="notes" />

@@ -11,22 +11,17 @@
     <div class="col-lg-6 col-md-7 col-sm-6 storytitle">
       @if (String.IsNullOrEmpty(Model.Url) && Model.Chapters.Count > 0)
       {
-        @*Html.ActionLink((string)OpenDoors.StringHelper.notLibrary(Model.Title),
-            "Details",
-            ViewData["type"].ToString(),
-            new { id = Model.ID },
-            new { })*@
-        <span>@Model.Title</span>
+        <span>@OpenDoors.StringHelper.notLibrary(Model.Title)</span>
       }
       else
       {
         if (ViewData["type"] == "Story")
         {
-        <a href="@Url.Content("~/works/" + Model.Url)">@Model.Title</a>
+        <a href="@Url.Content("~/works/" + Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
         }
         else
         {
-        <a href="@Url.Content(Model.Url)">@Model.Title</a>
+        <a href="@Url.Content(Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
         }
       }
       @if (!isAuthorView)
@@ -37,9 +32,12 @@
         @if (!String.IsNullOrEmpty(Model.Relationships))
         { <span>- @Model.Relationships</span> }
         <br />
-        @Model.Tags</b></span><br />
+        @if (!String.IsNullOrEmpty(Model.Characters))
+        { <span>- @Model.Characters</span><br/> }
+        @Model.Categories @Model.Tags</b></span><br />
       <span class="summary">@Html.Raw(Model.Summary)</span><br />
 
+      @if (ViewData["type"] == "Story") {
       <ol>
       @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
       {
@@ -59,15 +57,31 @@
         }
       }
       </ol>
+      }
 
       @if (TempData["result"] != null)
       {
         var result = (OpenDoors.Code.ArchiveResult)TempData["result"];
-        if (result.StoryResponses.ContainsKey(Model.ID))
+
+        // Stories
+        if (ViewData["type"] == "Story" && result.StoryResponses != null && result.StoryResponses.ContainsKey(Model.ID))
         {
         <div class="message-info @(result.StoryResponses[Model.ID].Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
           <ul>
             @foreach (string s in result.StoryResponses[Model.ID].Messages)
+            {
+              <li>@Html.Raw(s)</li>
+            }
+          </ul>
+        </div>
+        }
+
+        // Bookmarks
+        if (ViewData["type"] == "Bookmark" && result.BookmarkResponses != null && result.BookmarkResponses.ContainsKey(Model.ID))
+        {
+        <div class="message-info @(result.BookmarkResponses[Model.ID].Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
+          <ul>
+            @foreach (string s in result.BookmarkResponses[Model.ID].Messages)
             {
               <li>@Html.Raw(s)</li>
             }
