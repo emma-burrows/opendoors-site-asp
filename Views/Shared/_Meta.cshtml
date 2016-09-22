@@ -1,7 +1,30 @@
 ﻿@{
+  var hasBookmarkResult = false;
+  var hasStoryResult = false;
+  OpenDoors.Code.IItemResponse itemResponse = null;
+  // Process Archive results
+  if (TempData["result"] != null)
+  {
+    var result = (OpenDoors.Code.ArchiveResult)TempData["result"];
+    // Stories
+    hasStoryResult = ViewData["type"] == "Story" && result.StoryResponses != null
+                     && result.StoryResponses.Exists(i => i.OriginalId == Model.ID.ToString());
+    hasBookmarkResult = ViewData["type"] == "Bookmark" && result.BookmarkResponses != null
+                        && result.BookmarkResponses.Exists(i => i.OriginalId == Model.ID.ToString());
+    if (hasStoryResult)
+    {
+      itemResponse = (OpenDoors.Code.IItemResponse)result.StoryResponses.Find(s => s.OriginalId == Model.ID.ToString());
+    } 
+    else if (hasBookmarkResult)
+    {
+      itemResponse = result.BookmarkResponses.Find(s => s.OriginalId == Model.ID.ToString()) as OpenDoors.Code.IItemResponse;
+    }
+  }
+    
   bool doNotImport = Convert.ToBoolean(Model.DoNotImport);
-  bool imported = Convert.ToBoolean(Model.Imported);
+  bool imported = Convert.ToBoolean(Model.Imported) || (itemResponse != null && itemResponse.Status == "ok");
   bool isAuthorView = Convert.ToBoolean(HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString() == "Author");
+  bool isStory = ViewData["type"] == "Story";
   int id = Model.ID;
   string cssClass = imported ? "imported" : "";
   cssClass += doNotImport ? " donotimport" : "";
@@ -15,7 +38,7 @@
       }
       else
       {
-        if (ViewData["type"] == "Story")
+        if (isStory)
         {
         <a href="@Url.Content("~/works/" + Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
         }
@@ -28,16 +51,29 @@
       {
         <span>by <b>@Model.Author.Name</b></span>
       }<br />
-      <span class="summary"><b>[@Model.Rating] @Model.Warnings
+      <span class="summary">[@Model.Rating] 
+        @if (!String.IsNullOrEmpty(Model.Categories))
+        { <span>- @Model.Categories</span><br/> }
+
+        @if (Model.Date != null)
+        { <span><b>Date:</b> @Model.Date.ToString("yyyy-MM-dd")
+           @if (isStory && Model.Updated != null) { <span>- 
+             <b>Updated:</b> @Model.Updated.ToString("yyyy-MM-dd")
+             </span> }</span><br /> }
+
+        @if (!String.IsNullOrEmpty(Model.Warnings))
+        { <span><b>Warnings:</b> @Model.Warnings</span><br /> }
         @if (!String.IsNullOrEmpty(Model.Relationships))
-        { <span>- @Model.Relationships</span> }
-        <br />
+        { <span><b>Relationships:</b> @Model.Relationships</span><br /> }
         @if (!String.IsNullOrEmpty(Model.Characters))
-        { <span>- @Model.Characters</span><br/> }
-        @Model.Categories @Model.Tags</b></span><br />
+        { <span><b>Characters:</b> @Model.Characters</span><br/> }
+        @if (!String.IsNullOrEmpty(Model.Tags))
+        { <span><b>Tags:</b> @Model.Tags</span><br/> }
+      </span>
+
       <span class="summary">@Html.Raw(Model.Summary)</span><br />
 
-      @if (ViewData["type"] == "Story") {
+      @if (isStory) {
       <ol>
       @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
       {
@@ -59,41 +95,20 @@
       </ol>
       }
 
-      @if (TempData["result"] != null)
-      {
-        var result = (OpenDoors.Code.ArchiveResult)TempData["result"];
-
-        // Stories
-        if (ViewData["type"] == "Story" && result.StoryResponses != null && result.StoryResponses.ContainsKey(Model.ID))
-        {
-        <div class="message-info @(result.StoryResponses[Model.ID].Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
+      @if (hasStoryResult || hasBookmarkResult)
+       {
+        <div class="message-info @(itemResponse.Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
           <ul>
-            @foreach (string s in result.StoryResponses[Model.ID].Messages)
+            @foreach (string s in itemResponse.Messages)
             {
               <li>@Html.Raw(s)</li>
             }
           </ul>
         </div>
-        }
-
-        // Bookmarks
-        if (ViewData["type"] == "Bookmark" && result.BookmarkResponses != null && result.BookmarkResponses.ContainsKey(Model.ID))
-        {
-        <div class="message-info @(result.BookmarkResponses[Model.ID].Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
-          <ul>
-            @foreach (string s in result.BookmarkResponses[Model.ID].Messages)
-            {
-              <li>@Html.Raw(s)</li>
-            }
-          </ul>
-        </div>
-        }
       }
     </div>
 
-@*    @if (ViewData["type"] == "Story")
-    {
-    *@<div class="col-lg-6 col-md-5 col-sm-6 links">
+    <div class="col-lg-6 col-md-5 col-sm-6 links">
       @if (imported)
       {
         if (!String.IsNullOrEmpty(Model.Ao3Url))
@@ -116,15 +131,14 @@
       }
       <span></span>
 
-      @Html.ActionLink(imported ? "mark NOT imported" : "mark as imported", "Edit", "Story",
+      @Html.ActionLink(imported ? "mark NOT imported" : "mark as imported", "Edit", isStory ? "Story" : "Bookmark",
             new { id = Model.ID, imported = !imported },
             new { @class = "btn btn-success" })
       <span></span>
 
-      @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", "Edit", "Story",
+      @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", "Edit", isStory ? "Story" : "Bookmark",
             new { id = Model.ID, donotimport = !doNotImport },
             new { @class = "btn btn-warning", title = "Mark as to be imported" })
     </div>
-    @*}*@
   </div>
 }

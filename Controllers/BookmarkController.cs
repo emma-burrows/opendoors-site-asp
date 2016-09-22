@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using OpenDoors.Code;
 using OpenDoors.Models;
+using OtwArchive.Models.Request;
 
 namespace OpenDoors.Controllers
 {
@@ -26,46 +27,46 @@ namespace OpenDoors.Controllers
     public ActionResult Index(int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
-      List<Story> stories = db.Stories.Where(item => !item.Imported && !item.DoNotImport).ToList<Story>();
-      return View(stories.OrderBy(item => item.Title).ToPagedList(page, pageSize));
+      List<Bookmark> bookmarks = db.Bookmarks.Where(item => !item.Imported && !item.DoNotImport).ToList<Bookmark>();
+      return View(bookmarks.OrderBy(item => item.Title).ToPagedList(page, pageSize));
     }
 
     public ActionResult Imported(int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
-      List<Story> stories = db.Stories.Where(item => item.Imported && !item.DoNotImport).ToList<Story>();
-      return View("Index", stories.OrderBy(item => item.Title).ToPagedList(page, pageSize));
+      List<Bookmark> bookmarks = db.Bookmarks.Where(item => item.Imported && !item.DoNotImport).ToList<Bookmark>();
+      return View("Index", bookmarks.OrderBy(item => item.Title).ToPagedList(page, pageSize));
     }
 
     public ActionResult DoNotImport(int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
-      List<Story> stories = db.Stories.Where(item => item.DoNotImport).ToList<Story>();
-      return View("Index", stories.OrderBy(item => item.Title).ToPagedList(page, pageSize));
+      List<Bookmark> bookmarks = db.Bookmarks.Where(item => item.DoNotImport).ToList<Bookmark>();
+      return View("Index", bookmarks.OrderBy(item => item.Title).ToPagedList(page, pageSize));
     }
 
     public ActionResult Details(int id = 0)
     {
       TempData["config"] = config;
-      Story story = db.Stories.Find(id);
-      if (story == null)
+      Bookmark bookmark = db.Bookmarks.Find(id);
+      if (bookmark == null)
       {
         return HttpNotFound();
       }
-      return View(story);
+      return View(bookmark);
     }
 
     public ActionResult Edit(int id, bool imported = false, bool doNotImport = false)
     {
-      Story story = db.Stories.Find(id);
-      story.Imported = imported;
-      story.DoNotImport = doNotImport;
-      if (!story.DoNotImport && story.Author.DoNotImport) {
-        story.Author.DoNotImport = false;
+      Bookmark bookmark = db.Bookmarks.Find(id);
+      bookmark.Imported = imported;
+      bookmark.DoNotImport = doNotImport;
+      if (!bookmark.DoNotImport && bookmark.Author.DoNotImport) {
+        bookmark.Author.DoNotImport = false;
       }
       if (ModelState.IsValid)
       {
-        db.Entry(story).State = EntityState.Modified;
+        db.Entry(bookmark).State = EntityState.Modified;
         db.SaveChanges();
       }
       return Redirect(ControllerContext.HttpContext.Request.UrlReferrer.ToString());
@@ -75,7 +76,7 @@ namespace OpenDoors.Controllers
     {
       ArchiveImporter archive = new ArchiveImporter(db);
       string baseUrl = Request.Url.GetLeftPart(UriPartial.Authority) + Request.ApplicationPath + "/Chapter/Details/";
-      TempData["result"] = archive.importMany(new int[] { id }, Request.RequestContext);
+      TempData["result"] = archive.importMany(new int[] { id }, Request.RequestContext, ImportSettings.ImportType.Bookmark);
       if (view == "Details")
       {
         return RedirectToAction(view, new { id = id, ViewData = ViewData });

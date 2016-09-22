@@ -18,24 +18,27 @@ namespace OpenDoors.Controllers
     private Entities db = new Entities();
     private ArchiveImporter archive;
     private ArchiveConfig config;
+    private List<String> letters;
 
     public AuthorController()
     {
       archive = new ArchiveImporter(db);
       config = archive.config;
+      letters = db.Authors
+                  .Where(a => a.Stories.Count + a.Bookmarks.Count > 0)
+                  .GroupBy(p => p.Name.Substring(0, 1))
+                  .Select(x => x.Key.ToUpper())
+                  .OrderBy(x => x)
+                  .ToList();
     }
     //
     // GET: /Author/
-
-    public ActionResult Index(string letter = "A", int page = 1, int pageSize = 30)
+    public ActionResult Index(string letter = "", int page = 1, int pageSize = 30)
     {
-      TempData["config"] = config;
+      setTempData();
+      if (String.IsNullOrEmpty(letter)) letter = letters.First();
+      if (letter == "_") letter = "\\_";
       String tableName = config.Key + "_authors";
-      TempData["letters"] = db.Authors
-                                .GroupBy(p => p.Name.Substring(0, 1))
-                                .Select(x => x.Key.ToUpper())
-                                .OrderBy(x => x)
-                                .ToList();
       List<Author> authors = db.Authors
         .SqlQuery("SELECT * FROM " + tableName + " WHERE Name LIKE '" + letter + "%' ORDER BY Name")
         .ToList<Author>()
@@ -44,54 +47,39 @@ namespace OpenDoors.Controllers
       return View(authors.OrderBy(i => i.Name).ToPagedList(page, pageSize));
     }
 
-    public ActionResult Import(int id, string letter = "A", int page = 1, int pageSize = 30,
+    public ActionResult Import(int id, string letter = "", int page = 1, int pageSize = 30,
                                ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
-      TempData["config"] = config;
-      TempData["letters"] = db.Authors
-                                .GroupBy(p => p.Name.Substring(0, 1))
-                                .Select(x => x.Key.ToUpper())
-                                .OrderBy(x => x)
-                                .ToList();
+      setTempData();
+      if (String.IsNullOrEmpty(letter)) letter = letters.First();
       TempData["result"] = archive.importMany(new int[] { id }, this.Request.RequestContext, type);
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });
     }
 
-    public ActionResult ImportNone(int id, bool doNotImport, string letter = "A", int page = 1, int pageSize = 30)
+    public ActionResult ImportNone(int id, bool doNotImport, string letter = "", int page = 1, int pageSize = 30)
     {
-      TempData["config"] = config;
-      TempData["letters"] = db.Authors
-                          .GroupBy(p => p.Name.Substring(0, 1))
-                          .Select(x => x.Key.ToUpper())
-                          .OrderBy(x => x)
-                          .ToList();
+      setTempData();
+      if (String.IsNullOrEmpty(letter)) letter = letters.First();
       var author = db.Authors.Find(id);
       author.DoNotImport = doNotImport;
-      foreach (Story s in db.Authors.Find(id).Stories.Where(s => s.DoNotImport == false))
-      {
-        s.DoNotImport = doNotImport;
-      }
-      foreach (Bookmark s in db.Authors.Find(id).Bookmarks.Where(s => s.DoNotImport == false))
-      {
-        s.DoNotImport = doNotImport;
-      }
 
       db.Entry(author).State = EntityState.Modified;
       db.SaveChanges();
-      int[] ids = author.Stories.Where(s => s.DoNotImport == !doNotImport).Select(s => s.ID).ToArray();
-      TempData["result"] = archive.importNone(ids, doNotImport);
+      int[] storyIds = author.Stories.Where(s => s.DoNotImport == !doNotImport).Select(s => s.ID).ToArray();
+      int[] bookmarkIds = author.Bookmarks.Where(b => b.DoNotImport == !doNotImport).Select(b => b.ID).ToArray();
+
+      ArchiveResult result = archive.importNone(storyIds, doNotImport, ImportSettings.ImportType.Work);
+      ArchiveResult bookmarkResult = archive.importNone(bookmarkIds, doNotImport, ImportSettings.ImportType.Bookmark);
+      result.BookmarkResponses = bookmarkResult.BookmarkResponses;
+      TempData["result"] = result;
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });
     }
 
-    public ActionResult ImportAll(int id, string letter = "A", int page = 1, int pageSize = 30,
+    public ActionResult ImportAll(int id, string letter = "", int page = 1, int pageSize = 30,
                                   ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
-      TempData["config"] = config;
-      TempData["letters"] = db.Authors
-                          .GroupBy(p => p.Name.Substring(0, 1))
-                          .Select(x => x.Key.ToUpper())
-                          .OrderBy(x => x)
-                          .ToList();
+      setTempData();
+      if (String.IsNullOrEmpty(letter)) letter = letters.First();
       int[] ids = new int[] {};
       if (type == ImportSettings.ImportType.Work)
       {
@@ -107,13 +95,13 @@ namespace OpenDoors.Controllers
             new ArchiveResult(
                 new List<String>() { "All bookmarks are already marked as imported" },
                 null,
-                new Dictionary<int, BookmarkResponse>());
+                new List<BookmarkResponse>());
         }
         else {
           TempData["result"] = 
             new ArchiveResult(
                 new List<String>() { "All works are already marked as imported" }, 
-                new Dictionary<int,StoryResponse>(),
+                new List<StoryResponse>(),
                 null);
         }
       } else {
@@ -122,14 +110,10 @@ namespace OpenDoors.Controllers
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });
     }
 
-    public ActionResult CheckAll(int id, string letter = "A", int page = 1, int pageSize = 30)
+    public ActionResult CheckAll(int id, string letter = "", int page = 1, int pageSize = 30)
     {
-      TempData["config"] = config;
-      TempData["letters"] = db.Authors
-                          .GroupBy(p => p.Name.Substring(0, 1))
-                          .Select(x => x.Key.ToUpper())
-                          .OrderBy(x => x)
-                          .ToList();
+      setTempData();
+      if (String.IsNullOrEmpty(letter)) letter = letters.First();
       int[] ids = db.Authors.Find(id).Stories.Select(s => s.ID).ToArray();
       TempData["result"] = archive.checkMany(ids, Request.RequestContext);
       return RedirectToAction("Index", new { letter = letter, page = page, pageSize = pageSize });
@@ -139,6 +123,12 @@ namespace OpenDoors.Controllers
     {
       db.Dispose();
       base.Dispose(disposing);
+    }
+
+    private void setTempData()
+    {
+      TempData["config"] = config;
+      TempData["letters"] = letters;
     }
   }
 }
