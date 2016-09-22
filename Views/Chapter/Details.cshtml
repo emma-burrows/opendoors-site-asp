@@ -1,7 +1,7 @@
 ﻿@model OpenDoors.Models.Chapter
 
 @{
-  ViewBag.Title = Model.Title;
+  ViewBag.Title = Model.Story.Title;
   Layout = "~/Views/_LayoutPage.cshtml";
   Boolean IsFirstChapter = Model.Position == 0 || Model.Position == 1;
 }
@@ -18,7 +18,14 @@
   {
     var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
     <div class="form-group">
-      <label for="property.PropertyName" style="width: 150px">Note:</label> @Html.Raw(config.ODNote)
+      <label for="property.PropertyName" style="width: 150px">Note:</label><br />
+      <div style="border: 1px silver solid;">
+        @Html.Raw(config.ODNote)
+        @if (!String.IsNullOrEmpty(Model.Story.Notes))
+        {
+          <br /><br /><span>Author's notes:</span> @Html.Raw(Model.Story.Notes)
+        }
+      </div>
     </div>
   }
 
@@ -28,12 +35,13 @@
   </div>
 
   <div class="form-group">
-    @if(IsFirstChapter) {
-      <label for="property.PropertyName" style="width: 150px">Date:</label> 
-        if(Model.Story.Date != null) { Html.DisplayFor(model => model.Story.Date); }
-    } else {
-      <label for="property.PropertyName" style="width: 150px">Date:</label> 
-        if(Model.Story.Updated != null) { Html.DisplayFor(model => model.Story.Updated); }
+    @if (IsFirstChapter && Model.Story.Date.HasValue || 
+         (!IsFirstChapter && Model.Story.Date.HasValue && !Model.Story.Updated.HasValue))
+    {
+      // DON'T INDENT - THIS GETS SCRAPED
+      <label for="property.PropertyName" style="width: 150px">Date:</label> @Html.DisplayFor(model => model.Story.Date)
+    } else if (Model.Story.Updated.HasValue) {
+      <label for="property.PropertyName" style="width: 150px">Date:</label> @Html.DisplayFor(model => model.Story.Updated)
     }
   </div>
 
@@ -46,7 +54,7 @@
     @Html.DisplayFor(model => model.Position)
   </div>
 
-  @if (!String.IsNullOrEmpty(Model.Date.ToString()))
+  @if (Model.Date.HasValue)
   {
   <div class="form-group">
     <label for="property.PropertyName" style="width: 150px">Chapter posted</label> @Html.DisplayFor(model => model.Date)
@@ -57,7 +65,7 @@
 <div class="chapter-content" style="white-space: pre-line">
    @if(!Model.Notes.IsEmpty()) {
       <div class="form-group">
-        <label for="property.PropertyName" style="width: 150px">Author's note:</label> @Html.DisplayFor(model => model.Notes)
+        <label for="property.PropertyName" style="width: 150px">Author's notes:</label> @Html.Raw(Model.Notes)
       </div>
       
       <hr />
