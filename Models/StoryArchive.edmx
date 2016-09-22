@@ -7,10 +7,10 @@
     <Schema Namespace="od_sgfModel.Store" Alias="Self" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.1" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityContainer Name="od_sgfModelStoreContainer">
           <EntitySet Name="archiveconfig" EntityType="od_sgfModel.Store.archiveconfig" store:Type="Tables" Schema="od_sgf" />
-          <EntitySet Name="od_authors" EntityType="od_sgfModel.Store.od_authors" store:Type="Tables" Schema="od_sgf" />
-          <EntitySet Name="od_chapters" EntityType="od_sgfModel.Store.od_chapters" store:Type="Tables" Schema="od_sgf" />
-          <EntitySet Name="od_stories" EntityType="od_sgfModel.Store.od_stories" store:Type="Tables" Schema="od_sgf" />
-          <EntitySet Name="od_bookmarks" EntityType="od_sgfModel.Store.od_bookmarks" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="sitekey_authors" EntityType="od_sgfModel.Store.sitekey_authors" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="sitekey_chapters" EntityType="od_sgfModel.Store.sitekey_chapters" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="sitekey_stories" EntityType="od_sgfModel.Store.sitekey_stories" store:Type="Tables" Schema="od_sgf" />
+          <EntitySet Name="sitekey_bookmarks" EntityType="od_sgfModel.Store.sitekey_bookmarks" store:Type="Tables" Schema="od_sgf" />
         </EntityContainer>
         <EntityType Name="archiveconfig">
           <Key>
@@ -28,7 +28,7 @@
           <Property Name="Imported" Type="int" Nullable="false" />
           <Property Name="NotImported" Type="int" Nullable="false" />
         </EntityType>
-        <EntityType Name="od_authors">
+        <EntityType Name="sitekey_authors">
           <Key>
             <PropertyRef Name="id" />
           </Key>
@@ -38,7 +38,7 @@
           <Property Name="imported" Type="bool" Nullable="false" />
           <Property Name="doNotImport" Type="bool" Nullable="false" />
         </EntityType>
-        <EntityType Name="od_chapters">
+        <EntityType Name="sitekey_chapters">
           <Key>
             <PropertyRef Name="ID" />
           </Key>
@@ -52,7 +52,7 @@
           <Property Name="Notes" Type="text" Nullable="false" />
           <Property Name="url" Type="varchar" MaxLength="1024" />
         </EntityType>
-        <EntityType Name="od_stories">
+        <EntityType Name="sitekey_stories">
           <Key>
             <PropertyRef Name="id" />
           </Key>
@@ -64,18 +64,18 @@
           <Property Name="date" Type="date" Nullable="true" />
           <Property Name="updated" Type="date" Nullable="true" />
           <Property Name="categories" Type="varchar" MaxLength="45" />
-          <Property Name="tags" Type="varchar" MaxLength="255" />
+          <Property Name="tags" Type="varchar" MaxLength="1024" />
           <Property Name="warnings" Type="varchar" MaxLength="255" />
           <Property Name="notes" Type="longtext" />
           <Property Name="fandoms" Type="varchar" MaxLength="255" />
-          <Property Name="characters" Type="varchar" MaxLength="255" />
-          <Property Name="relationships" Type="varchar" MaxLength="255" />
+          <Property Name="characters" Type="varchar" MaxLength="1024" />
+          <Property Name="relationships" Type="varchar" MaxLength="1024" />
           <Property Name="url" Type="varchar" MaxLength="255" />
           <Property Name="imported" Type="bool" Nullable="false" />
           <Property Name="doNotImport" Type="bool" Nullable="false" />
           <Property Name="Ao3Url" Type="varchar" MaxLength="255" />
         </EntityType>
-      <EntityType Name="od_bookmarks">
+      <EntityType Name="sitekey_bookmarks">
         <Key>
           <PropertyRef Name="id" />
         </Key>
@@ -86,12 +86,12 @@
         <Property Name="rating" Type="varchar" Nullable="false" MaxLength="255" />
         <Property Name="date" Type="date" Nullable="true" />
         <Property Name="categories" Type="varchar" MaxLength="45" />
-        <Property Name="tags" Type="varchar" MaxLength="255" />
+        <Property Name="tags" Type="varchar" MaxLength="1024" />
         <Property Name="warnings" Type="varchar" MaxLength="255" />
         <Property Name="notes" Type="longtext" />
         <Property Name="fandoms" Type="varchar" MaxLength="255" />
-        <Property Name="characters" Type="varchar" MaxLength="255" />
-        <Property Name="relationships" Type="varchar" MaxLength="255" />
+        <Property Name="characters" Type="varchar" MaxLength="1024" />
+        <Property Name="relationships" Type="varchar" MaxLength="1024" />
         <Property Name="url" Type="varchar" MaxLength="255" />
         <Property Name="imported" Type="bool" Nullable="false" />
         <Property Name="doNotImport" Type="bool" Nullable="false" />
@@ -144,7 +144,7 @@
           <Property Name="Date" Type="DateTime" Nullable="true" />
           <Property Name="Updated" Type="DateTime" Nullable="true" />
           <Property Name="Categories" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
-          <Property Name="Tags" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Tags" Type="String" MaxLength="1024" Unicode="false" FixedLength="false" />
           <Property Name="Warnings" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Notes" Type="String" MaxLength="1073741823" Unicode="false" FixedLength="false" />
           <Property Name="Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
@@ -154,8 +154,8 @@
           <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsstories" FromRole="stories" ToRole="authors" />
           <NavigationProperty Name="Chapters" Relationship="od_sgfModel.StoryChapter" FromRole="Story" ToRole="Chapter" />
           <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Type="String" Name="Characters" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Type="String" Name="Relationships" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Characters" MaxLength="1024" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Relationships" MaxLength="1024" FixedLength="false" Unicode="false" />
         </EntityType>
         <Association Name="authorsstories">
           <End Type="od_sgfModel.Author" Role="authors" Multiplicity="1" />
@@ -180,7 +180,7 @@
           <Property Name="Rating" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Date" Type="DateTime" Nullable="true" />
           <Property Name="Categories" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
-          <Property Name="Tags" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="Tags" Type="String" MaxLength="1024" Unicode="false" FixedLength="false" />
           <Property Name="Warnings" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Notes" Type="String" MaxLength="1073741823" Unicode="false" FixedLength="false" />
           <Property Name="Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
@@ -189,8 +189,8 @@
           <Property Name="Ao3Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsbookmarks" FromRole="bookmarks" ToRole="authors" />
           <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Type="String" Name="Characters" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Type="String" Name="Relationships" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Characters" MaxLength="1024" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Relationships" MaxLength="1024" FixedLength="false" Unicode="false" />
         </EntityType>
         <Association Name="authorsbookmarks">
           <End Type="od_sgfModel.Author" Role="authors" Multiplicity="1" />
@@ -255,7 +255,7 @@
         <EntityContainerMapping StorageEntityContainer="od_sgfModelStoreContainer" CdmEntityContainer="Entities">
           <EntitySetMapping Name="Authors">
             <EntityTypeMapping TypeName="od_sgfModel.Author">
-              <MappingFragment StoreEntitySet="od_authors">
+              <MappingFragment StoreEntitySet="sitekey_authors">
                 <ScalarProperty Name="ID" ColumnName="id" />
                 <ScalarProperty Name="Name" ColumnName="name" />
                 <ScalarProperty Name="Email" ColumnName="email" />
@@ -266,7 +266,7 @@
           </EntitySetMapping>
           <EntitySetMapping Name="Stories">
             <EntityTypeMapping TypeName="od_sgfModel.Story">
-              <MappingFragment StoreEntitySet="od_stories">
+              <MappingFragment StoreEntitySet="sitekey_stories">
                 <ScalarProperty Name="Relationships" ColumnName="relationships" />
                 <ScalarProperty Name="Characters" ColumnName="characters" />
                 <ScalarProperty Name="Fandoms" ColumnName="fandoms" />
@@ -290,7 +290,7 @@
           </EntitySetMapping>
           <EntitySetMapping Name="Bookmarks">
             <EntityTypeMapping TypeName="od_sgfModel.Bookmark">
-              <MappingFragment StoreEntitySet="od_bookmarks">
+              <MappingFragment StoreEntitySet="sitekey_bookmarks">
                 <ScalarProperty Name="Relationships" ColumnName="relationships" />
                 <ScalarProperty Name="Characters" ColumnName="characters" />
                 <ScalarProperty Name="Fandoms" ColumnName="fandoms" />
@@ -313,7 +313,7 @@
           </EntitySetMapping>
           <EntitySetMapping Name="Chapters">
             <EntityTypeMapping TypeName="od_sgfModel.Chapter">
-              <MappingFragment StoreEntitySet="od_chapters">
+              <MappingFragment StoreEntitySet="sitekey_chapters">
                 <ScalarProperty Name="Url" ColumnName="url" />
                 <ScalarProperty Name="Position" ColumnName="Position" />
                 <ScalarProperty Name="Notes" ColumnName="Notes" />
