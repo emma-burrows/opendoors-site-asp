@@ -33,7 +33,7 @@ namespace OpenDoors.Code
       NameValueCollection webConfig = (NameValueCollection)WebConfigurationManager.GetSection("ArchiveSettings");
       String key = webConfig["Key"];
 
-      config = db.ArchiveConfigs.Where(c => c.Key == key).First();
+      config = db.ArchiveConfigs.First(c => c.Key == key);
 
       ArchiveSettings = new ImportSettings();
       ArchiveSettings.ArchiveHost         = webConfig["ArchiveHost"];
@@ -60,8 +60,8 @@ namespace OpenDoors.Code
                                     ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       List<String> messages = new List<string>();
-      Dictionary<int, StoryResponse> workResults = new Dictionary<int, StoryResponse>();
-      Dictionary<int, BookmarkResponse> bookmarkResults = new Dictionary<int, BookmarkResponse>();
+      List<StoryResponse> workResults = new List<StoryResponse>();
+      List<BookmarkResponse> bookmarkResults = new List<BookmarkResponse>();
 
       ImportRequest workimport = new ImportRequest();
       workimport.SendClaimEmails = ArchiveSettings.SendClaimEmails;
@@ -101,26 +101,28 @@ namespace OpenDoors.Code
           };
 
       // Stories
-      if (result.Works != null && result.Works.Count() == ids.Count())
+      if (result.Works != null)
       {
 
         // Match the results to the ids (hopefully all in the same order...)
-        workResults =
-          ids.Zip(result.Works, (id, work) => new { id, work })
-             .ToDictionary(
-              item => item.id,
-              item => new StoryResponse(item.work.Status, item.work.Url, item.work.OriginalUrl, item.work.Messages));
+        workResults = result.Works.Select(item => new StoryResponse(item.Status, item.Url, item.OriginalUrl, item.Messages, item.OriginalId)).ToList();
 
-        foreach (KeyValuePair<int, StoryResponse> entry in workResults)
+        foreach (StoryResponse workResponse in workResults)
         {
-          StoryResponse workResponse = entry.Value;
-          Story story = db.Stories.Find(entry.Key);
+          Story story = db.Stories.Find(Int32.Parse(workResponse.OriginalId));
           if (workResponse.Status == "created")
           {
             story.Imported = true;
             story.Ao3Url = workResponse.ArchiveUrl;
             config.NotImported = config.NotImported - 1;
             config.Imported = config.Imported + 1;
+            db.Entry(story).State = EntityState.Modified;
+          }
+          else if (workResponse.Messages.Exists(m => m.StartsWith("A work has already been imported")))
+          {
+            story.Imported = true;
+            // story.Ao3Url = workResponse.ArchiveUrl; // TODO: Change Archive to return URL
+
             db.Entry(story).State = EntityState.Modified;
           }
           else
@@ -131,22 +133,26 @@ namespace OpenDoors.Code
       }
       
       // bookmarks
-      if (result.Bookmarks != null && result.Bookmarks.Count() == ids.Count())
+      if (result.Bookmarks != null)
       {
-        bookmarkResults =
-            ids.Zip(result.Bookmarks, (id, bookmark) => new { id, bookmark })
-               .ToDictionary(
-                item => item.id,
-                item => new BookmarkResponse(item.bookmark.Status, item.bookmark.ArchiveUrl, item.bookmark.OriginalUrl, item.bookmark.Messages));
+        bookmarkResults = result.Bookmarks
+          .Select(item => new BookmarkResponse(item.Status, item.ArchiveUrl, item.OriginalUrl, item.Messages, item.OriginalId))
+          .ToList();
 
-        foreach (KeyValuePair<int, BookmarkResponse> entry in bookmarkResults)
+        foreach (BookmarkResponse bookmarkResponse in bookmarkResults)
         {
-          BookmarkResponse bookmarkResponse = entry.Value;
-          Bookmark bookmark = db.Bookmarks.Find(entry.Key);
+          Bookmark bookmark = db.Bookmarks.Find(Int32.Parse(bookmarkResponse.OriginalId));
           if (bookmarkResponse.Status == "created")
           {
             bookmark.Imported = true;
             bookmark.Ao3Url = bookmarkResponse.ArchiveUrl;
+            
+            db.Entry(bookmark).State = EntityState.Modified;
+          }
+          else if (bookmarkResponse.Messages.Exists(m => m.StartsWith("There is already a bookmark for this archivist")))
+          {
+            bookmark.Imported = true;
+            // bookmark.Ao3Url = bookmarkResponse.ArchiveUrl; // TODO: Change Archive to return URL
             
             db.Entry(bookmark).State = EntityState.Modified;
           }
@@ -167,23 +173,43 @@ namespace OpenDoors.Code
     }
 
     /// <summary>
-    /// Allow or disallow importing for specific stories
+    /// Allow or disallow importing for specific items
     /// </summary>
-    /// <param name="ids">Story ids</param>
+    /// <param name="ids">Item ids</param>
     /// <param name="doNotImport">True = do not import, False = allow import</param>
+    /// <param name="type">ImportSettings.ImportType</param>
     /// <returns>ArchiveResult indicating</returns>
-    public ArchiveResult importNone(int[] ids, bool doNotImport)
+    public ArchiveResult importNone(int[] ids, bool doNotImport,
+                                    ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
-      Dictionary<int, StoryResponse> storiesWithResponses = new Dictionary<int, StoryResponse>();
-      var stories = db.Stories.Where(s => ids.Contains(s.ID));
-      foreach (Story s in stories)
+      List<StoryResponse> storiesWithResponses = null;
+      List<BookmarkResponse> bookmarksWithResponses = null;
+      if (type == ImportSettings.ImportType.Work)
       {
-        s.DoNotImport = doNotImport;
-        db.Entry(s).State = EntityState.Modified;
-        storiesWithResponses.Add(s.ID, new StoryResponse("updated", "", "", new List<string>() { "Updated " + s.Title + "." }));
+        storiesWithResponses = new List<StoryResponse>();
+        var stories = db.Stories.Where(s => ids.Contains(s.ID));
+        foreach (Story s in stories)
+        {
+          s.DoNotImport = doNotImport;
+          db.Entry(s).State = EntityState.Modified;
+          storiesWithResponses.Add(new StoryResponse("updated", "", "", new List<string>() {"Updated " + s.Title + "."},
+            s.ID.ToString()));
+        }
+      }
+      if (type == ImportSettings.ImportType.Bookmark)
+      {
+        bookmarksWithResponses = new List<BookmarkResponse>();
+        var bookmarks = db.Bookmarks.Where(b => ids.Contains(b.ID));
+        foreach (Bookmark b in bookmarks)
+        {
+          b.DoNotImport = doNotImport;
+          db.Entry(b).State = EntityState.Modified;
+          bookmarksWithResponses.Add(new BookmarkResponse("updated", "", "", new List<string>() { "Updated " + b.Title + "." },
+            b.ID.ToString()));
+        }
       }
       db.SaveChanges();
-      return new ArchiveResult(new List<String>() { "Updated import status" }, storiesWithResponses, null);
+      return new ArchiveResult(new List<String>() { "Updated import status" }, storiesWithResponses, bookmarksWithResponses);
     }
 
     /// <summary>
@@ -195,15 +221,15 @@ namespace OpenDoors.Code
     public ArchiveResult checkMany(int[] ids, RequestContext requestContext)
     {
       List<String> messages = new List<string>();
-      Dictionary<int, WorksResponse> workResults = new Dictionary<int, WorksResponse>();
-      Dictionary<int, StoryResponse> storiesWithResponses = new Dictionary<int,StoryResponse>();
+      List<WorksResponse> workResults = new List<WorksResponse>();
+      List<StoryResponse> storiesWithResponses = new List<StoryResponse>();
 
       // Get the URL of the first chapter in the work
-      List<String> originalUrls = new List<String>();
+      List<CheckRequestUrls> originalUrls = new List<CheckRequestUrls>();
       foreach (int id in ids)
       {
         Story story = db.Stories.Find(id);
-        originalUrls.Add(externalWork(story, requestContext).ChapterUrls.First().ToString());
+        originalUrls.Add(new CheckRequestUrls(id.ToString(), externalWork(story, requestContext).ChapterUrls.First().ToString()));
       }
 
       // Get the URLs from the ArchiveImporter and mark works as imported or not
@@ -214,25 +240,17 @@ namespace OpenDoors.Code
       if (worksResponses != null && worksResponses.Count() == ids.Count())
       {
         // Match the results to the ids
-        workResults =
-          ids.Zip(worksResponses, (id, work) => new { id, work })
-             .ToDictionary(item => item.id, item => item.work);
+        workResults = worksResponses;
 
-        storiesWithResponses = workResults.Where(item => item.Value.OriginalUrl != null)
-          .ToDictionary(
-            item => item.Key,
-            item => new StoryResponse(item.Value.Status, item.Value.WorkUrl, item.Value.OriginalUrl, new List<String>()));
+        storiesWithResponses = workResults.Where(item => item.OriginalUrl != null)
+          .Select(item => new StoryResponse(item.Status, item.WorkUrl, item.OriginalUrl, new List<String>(), item.OriginalId))
+          .ToList();
 
-        if (storiesWithResponses.Count() == 0)
+        if (storiesWithResponses.Any())
         {
-          messages.Add("None of the works have been imported.");
-        }
-        else
-        {
-          foreach (KeyValuePair<int, StoryResponse> entry in storiesWithResponses)
+          foreach (StoryResponse workResponse in storiesWithResponses)
           {
-            StoryResponse workResponse = entry.Value;
-            Story story = db.Stories.Find(entry.Key);
+            Story story = db.Stories.Find(Int32.Parse(workResponse.OriginalId));
             if (workResponse.Status == "ok" && !story.Imported)
             {
               config.Imported = config.Imported + 1;
@@ -253,10 +271,19 @@ namespace OpenDoors.Code
             }
             else
             {
+              if (story.Ao3Url != workResponse.ArchiveUrl)
+              {
+                story.Ao3Url = workResponse.ArchiveUrl;
+                db.Entry(story).State = EntityState.Modified;
+              }
               workResponse.Messages.Add("Story status is correct.");
             }
           }
           db.SaveChanges();
+        }
+        else
+        {
+          messages.Add("None of the works have been imported.");
         }
       }
       return new ArchiveResult(messages, storiesWithResponses, null);
@@ -270,6 +297,7 @@ namespace OpenDoors.Code
       WorkImportRequest external = new WorkImportRequest();
       external.ExternalAuthorName   = author.Name;
       external.ExternalAuthorEmail  = author.Email;
+      external.Id                   = story.ID.ToString();
       external.Summary              = story.Summary;
       external.Fandoms              = story.Fandoms;
       external.Relationships        = story.Relationships;
@@ -278,11 +306,11 @@ namespace OpenDoors.Code
       external.AdditionalTags       = story.Tags;
       external.Rating               = story.Rating;
       external.Title                = story.Title;
+      external.Notes                = config.ODNote;
       if (!String.IsNullOrEmpty(story.Notes))
       {
-        external.Notes              = story.Notes + "<br/><br/>";
+        external.Notes              += "<br/><br/><b>Author's notes:</b> " + story.Notes;
       }
-      external.Notes               += config.ODNote;
       external.Warnings             = story.Warnings;
 
       external.ChapterUrls = new List<Uri>();
@@ -316,6 +344,7 @@ namespace OpenDoors.Code
 
       BookmarkImportRequest external = new BookmarkImportRequest();
       external.Author = author.Name;
+      external.Id = bookmark.ID.ToString();
       external.Url = bookmark.Url;
       external.Summary = bookmark.Summary;
       external.FandomString = bookmark.Fandoms;

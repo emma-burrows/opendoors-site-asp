@@ -8,47 +8,56 @@ namespace OpenDoors.Code
 {
   public class ArchiveResult
   {
-    public ArchiveResult(List<String> messages, Dictionary<int, StoryResponse> workResponses, 
-                         Dictionary<int, BookmarkResponse> bookmarkResponses)
+    public ArchiveResult(List<String> messages, List<StoryResponse> workResponses, 
+                         List<BookmarkResponse> bookmarkResponses)
     {
       Messages = messages;
       StoryResponses = workResponses;
       BookmarkResponses = bookmarkResponses;
     }
     public List<String> Messages { get; set; }
-    public Dictionary<int, StoryResponse> StoryResponses { get; set; }
-    public Dictionary<int, BookmarkResponse> BookmarkResponses { get; set; }
+    public List<StoryResponse> StoryResponses { get; set; }
+    public List<BookmarkResponse> BookmarkResponses { get; set; }
   }
 
-  public class StoryResponse
+  public interface IItemResponse
   {
-    public StoryResponse(String status, String archiveUrl, String originalUrl, List<String> messages, String originalRef = "0")
+    String Status { get; set; }
+    String OriginalId { get; set; }
+    String ArchiveUrl { get; set; }
+    String OriginalUrl { get; set; }
+    List<String> Messages { get; set; }
+  }
+
+  public class StoryResponse : IItemResponse
+  {
+    public StoryResponse(String status, String archiveUrl, String originalUrl, List<String> messages, String originalId)
     {
-      OriginalRef = originalRef;
+      OriginalId = originalId;
       Status = status;
       ArchiveUrl = archiveUrl;
       OriginalUrl = originalUrl;
       Messages = messages;
     }
-    public String OriginalRef { get; set; }
     public String Status { get; set; }
+    public String OriginalId { get; set; }
     public String ArchiveUrl { get; set; }
     public String OriginalUrl { get; set; }
     public List<String> Messages { get; set; }
   }
 
-  public class BookmarkResponse
+  public class BookmarkResponse : IItemResponse
   {
-    public BookmarkResponse(String status, String archiveUrl, String originalUrl, List<String> messages, String originalRef = "0")
+    public BookmarkResponse(String status, String archiveUrl, String originalUrl, List<String> messages, String originalId)
     {
-      OriginalRef = originalRef;
+      OriginalId = originalId;
       Status = status;
       ArchiveUrl = archiveUrl;
       OriginalUrl = originalUrl;
       Messages = messages;
     }
-    public String OriginalRef { get; set; }
     public String Status { get; set; }
+    public String OriginalId { get; set; }
     public String ArchiveUrl { get; set; }
     public String OriginalUrl { get; set; }
     public List<String> Messages { get; set; }
