@@ -9,10 +9,17 @@ namespace OpenDoors
   {
     static public string notLibrary(string s)
     {
-      if (s.EndsWith(", The"))
-        s = "The " + s.Remove(s.LastIndexOf(", The"), 5);
-      if (s.EndsWith(", A"))
-        s = "A " + s.Remove(s.LastIndexOf(", A"), 3);
+      if (String.IsNullOrEmpty(s))
+      {
+        s = "Untitled";
+      }
+      else
+      {
+        if (s.EndsWith(", The"))
+          s = "The " + s.Remove(s.LastIndexOf(", The"), 5);
+        if (s.EndsWith(", A"))
+          s = "A " + s.Remove(s.LastIndexOf(", A"), 3);
+      }
 
       return s;
     }

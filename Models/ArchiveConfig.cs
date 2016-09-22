@@ -9,9 +9,10 @@
 
 namespace OpenDoors.Models
 {
-    using System;
-    using System.Collections.Generic;
-  	using System.Web.Mvc;
+  using System;
+  using System.Collections.Generic;
+  using System.ComponentModel;
+  using System.Web.Mvc;
     
     public partial class ArchiveConfig
     {
@@ -20,6 +21,7 @@ namespace OpenDoors.Models
         [AllowHtml]
         public string ODNote { get; set; }
         public bool SendEmail { get; set; }
+        [DisplayName("Post as drafts")]
         public bool PostWorks { get; set; }
         public int ItemsPerPage { get; set; }
         public string Key { get; set; }
