@@ -5,14 +5,30 @@
 @{
   var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
   ViewBag.Title = config.Name;
+  ViewData["type"] = TempData["type"];
   Layout = "~/Views/_LayoutPage.cshtml";
 }
 
   <div class="center">
     @Html.PagedListPager(Model, page => Url.Action(ViewContext.RouteData.Values["Action"].ToString(), new { page, pageSize = Model.PageSize }))
+    
+    @Html.ActionLink("check all imported on this page",
+                    "CheckAll",
+                    "Story",
+                    new { 
+                      ids = string.Join(",", Model.Select(s => s.ID).ToArray()), 
+                      page = Model.PageNumber, 
+                      pageSize = Model.PageSize 
+                    },
+                    new { @class = "btn btn-success" })
+
   </div>
 
-@foreach (var story in Model)
-{
-  @Html.Partial("_Meta", story, ViewData)
-}
+            
+<div class="extra-space">
+  @foreach (var story in Model)
+  {
+    ViewData["type"] = "Story";
+    @Html.Partial("_Meta", story, ViewData)
+  }
+</div>

@@ -226,65 +226,73 @@ namespace OpenDoors.Code
 
       // Get the URL of the first chapter in the work
       List<CheckRequestUrls> originalUrls = new List<CheckRequestUrls>();
-      foreach (int id in ids)
-      {
-        Story story = db.Stories.Find(id);
-        originalUrls.Add(new CheckRequestUrls(id.ToString(), externalWork(story, requestContext).ChapterUrls.First().ToString()));
-      }
-
-      // Get the URLs from the ArchiveImporter and mark works as imported or not
-      CheckRequest req = new CheckRequest();
-      req.OriginalUrls = originalUrls;
-      CheckResponse result = archive.checkUrls(req);
-      List<WorksResponse> worksResponses = result.worksResponses;
-      if (worksResponses != null && worksResponses.Count() == ids.Count())
-      {
-        // Match the results to the ids
-        workResults = worksResponses;
-
-        storiesWithResponses = workResults.Where(item => item.OriginalUrl != null)
-          .Select(item => new StoryResponse(item.Status, item.WorkUrl, item.OriginalUrl, new List<String>(), item.OriginalId))
-          .ToList();
-
-        if (storiesWithResponses.Any())
+      if (ids != null && ids.Length > 0) {
+        foreach (int id in ids)
         {
-          foreach (StoryResponse workResponse in storiesWithResponses)
+          Story story = db.Stories.Find(id);
+          originalUrls.Add(new CheckRequestUrls(id.ToString(), externalWork(story, requestContext).ChapterUrls.First().ToString()));
+        }
+
+        // Get the URLs from the ArchiveImporter and mark works as imported or not
+        CheckRequest req = new CheckRequest();
+        req.OriginalUrls = originalUrls;
+        CheckResponse result = archive.checkUrls(req);
+        List<WorksResponse> worksResponses = result.worksResponses;
+        if (worksResponses != null && worksResponses.Count() == ids.Count())
+        {
+          // Match the results to the ids
+          workResults = worksResponses;
+
+          storiesWithResponses = workResults.Where(item => item.OriginalUrl != null)
+            .Select(
+              item =>
+                new StoryResponse(item.Status, item.WorkUrl, item.OriginalUrl, new List<String>(), item.OriginalId))
+            .ToList();
+
+          if (storiesWithResponses.Any())
           {
-            Story story = db.Stories.Find(Int32.Parse(workResponse.OriginalId));
-            if (workResponse.Status == "ok" && !story.Imported)
+            foreach (StoryResponse workResponse in storiesWithResponses)
             {
-              config.Imported = config.Imported + 1;
-              config.NotImported = config.NotImported - 1;
-              story.Imported = true;
-              story.Ao3Url = workResponse.ArchiveUrl;
-              db.Entry(story).State = EntityState.Modified;
-              workResponse.Messages.Add("Found work on the Archive and updated its status here.");
-            }
-            else if (workResponse.Status == "not_found" && story.Imported)
-            {
-              config.Imported = config.Imported - 1;
-              config.NotImported = config.NotImported + 1;
-              story.Imported = false;
-              story.Ao3Url = "";
-              db.Entry(story).State = EntityState.Modified;
-              workResponse.Messages.Add("Did not find work on the Archive and updated its status here.");
-            }
-            else
-            {
-              if (story.Ao3Url != workResponse.ArchiveUrl)
+              Story story = db.Stories.Find(Int32.Parse(workResponse.OriginalId));
+              if (workResponse.Status == "ok" && !story.Imported)
               {
+                config.Imported = config.Imported + 1;
+                config.NotImported = config.NotImported - 1;
+                story.Imported = true;
                 story.Ao3Url = workResponse.ArchiveUrl;
                 db.Entry(story).State = EntityState.Modified;
+                workResponse.Messages.Add("Found work on the Archive and updated its status here.");
               }
-              workResponse.Messages.Add("Story status is correct.");
+              else if (workResponse.Status == "not_found" && story.Imported)
+              {
+                config.Imported = config.Imported - 1;
+                config.NotImported = config.NotImported + 1;
+                story.Imported = false;
+                story.Ao3Url = "";
+                db.Entry(story).State = EntityState.Modified;
+                workResponse.Messages.Add("Did not find work on the Archive and updated its status here.");
+              }
+              else
+              {
+                if (story.Ao3Url != workResponse.ArchiveUrl)
+                {
+                  story.Ao3Url = workResponse.ArchiveUrl;
+                  db.Entry(story).State = EntityState.Modified;
+                }
+                workResponse.Messages.Add("Story status is correct.");
+              }
             }
+            db.SaveChanges();
           }
-          db.SaveChanges();
+          else
+          {
+            messages.Add("None of the works have been imported.");
+          }
         }
-        else
-        {
-          messages.Add("None of the works have been imported.");
-        }
+      }
+      else
+      {
+        messages.Add("No works were selected for checking.");
       }
       return new ArchiveResult(messages, storiesWithResponses, null);
     }
@@ -315,7 +323,7 @@ namespace OpenDoors.Code
 
       external.ChapterUrls = new List<Uri>();
       var chapters = story.Chapters.OrderBy(c => c.Position);
-      if (chapters.Count() > 0)
+      if (chapters.Any())
       {
         // Stories with chapters
         foreach (Chapter c in chapters)

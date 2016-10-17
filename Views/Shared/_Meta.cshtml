@@ -1,4 +1,5 @@
 ﻿@{
+  var controller = ViewContext.RouteData.GetRequiredString("controller");
   var hasBookmarkResult = false;
   var hasStoryResult = false;
   OpenDoors.Code.IItemResponse itemResponse = null;
@@ -118,7 +119,7 @@
       }
       else if (!doNotImport)
       {
-        @Html.ActionLink("import", "Import", "Author",
+        @Html.ActionLink("import", "Import", controller,
             new
             {
               id = Model.ID,

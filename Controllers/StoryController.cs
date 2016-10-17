@@ -26,13 +26,15 @@ namespace OpenDoors.Controllers
     public ActionResult Index(int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
-      List<Story> stories = db.Stories.Where(item => !item.Imported && !item.DoNotImport).ToList<Story>();
+      TempData["type"] = "Story";
+      List<Story> stories = db.Stories.Where(item => !item.Imported && !item.DoNotImport && !item.Author.DoNotImport).ToList<Story>();
       return View(stories.OrderBy(item => item.Title).ToPagedList(page, pageSize));
     }
 
     public ActionResult Imported(int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
+      TempData["type"] = "Story";
       List<Story> stories = db.Stories.Where(item => item.Imported && !item.DoNotImport).ToList<Story>();
       return View("Index", stories.OrderBy(item => item.Title).ToPagedList(page, pageSize));
     }
@@ -40,8 +42,18 @@ namespace OpenDoors.Controllers
     public ActionResult DoNotImport(int page = 1, int pageSize = 30)
     {
       TempData["config"] = config;
-      List<Story> stories = db.Stories.Where(item => item.DoNotImport).ToList<Story>();
+      TempData["type"] = "Story";
+      List<Story> stories = db.Stories.Where(item => item.DoNotImport || item.Author.DoNotImport).ToList<Story>();
       return View("Index", stories.OrderBy(item => item.Title).ToPagedList(page, pageSize));
+    }
+
+    public ActionResult CheckAll(String ids, int page = 1, int pageSize = 30)
+    {
+      TempData["config"] = config;
+      TempData["type"] = "Story";
+      var storyIds = ids.Split(',').Select(i => Int32.Parse(i)).ToArray();
+      TempData["result"] = archive.checkMany(storyIds, Request.RequestContext);
+      return RedirectToAction("Index", new { page = page, pageSize = pageSize });
     }
 
     public ActionResult Details(int id = 0)
@@ -63,9 +75,14 @@ namespace OpenDoors.Controllers
       if (!story.DoNotImport && story.Author.DoNotImport) {
         story.Author.DoNotImport = false;
       }
+      if (story.DoNotImport && story.Author.Stories.All(s => s.DoNotImport))
+      {
+        story.Author.DoNotImport = true;
+      }
       if (ModelState.IsValid)
       {
         db.Entry(story).State = EntityState.Modified;
+        db.Entry(story.Author).State = EntityState.Modified;
         db.SaveChanges();
       }
       return Redirect(ControllerContext.HttpContext.Request.UrlReferrer.ToString());

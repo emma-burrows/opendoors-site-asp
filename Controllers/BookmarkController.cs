@@ -64,9 +64,14 @@ namespace OpenDoors.Controllers
       if (!bookmark.DoNotImport && bookmark.Author.DoNotImport) {
         bookmark.Author.DoNotImport = false;
       }
+      if (bookmark.DoNotImport && bookmark.Author.Stories.All(s => s.DoNotImport))
+      {
+        bookmark.Author.DoNotImport = true;
+      }
       if (ModelState.IsValid)
       {
         db.Entry(bookmark).State = EntityState.Modified;
+        db.Entry(bookmark.Author).State = EntityState.Modified;
         db.SaveChanges();
       }
       return Redirect(ControllerContext.HttpContext.Request.UrlReferrer.ToString());

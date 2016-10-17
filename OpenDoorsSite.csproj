@@ -186,6 +186,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Content Include="Content\Opendoors.png" />
     <Content Include="Content\PagedList.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Global.asax" />
@@ -201,19 +202,10 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\_LayoutPage.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_LayoutPage.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Views\Author\Index.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Index.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Views\Shared\_Meta.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_Meta.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup />
@@ -231,16 +223,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Story\Index.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Index.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Story\Details.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Details.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -266,75 +252,42 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Chapter\Index.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Index.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Chapter\Details.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Details.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Config\Details.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Details.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Config\Edit.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Edit.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\DisplayTemplates\Name.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Name.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\EditorTemplates\SByte.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>SByte.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\EditorTemplates\String.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>String.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\EditorTemplates\Int32.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Int32.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\DisplayTemplates\DateTime.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>DateTime.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Views\Bookmark\Details.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Details.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Views\Bookmark\Index.cshtml">
-      <CustomToolNamespace>OpenDoors</CustomToolNamespace>
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Index.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Views\Shared\DisplayTemplates\NullableDateTime.cshtml" />
     <None Include="Web.VM.config">
@@ -369,9 +322,9 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>31544</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost/Wesley</IISUrl>
+          <IISUrl>http://localhost/OpenDoors</IISUrl>
           <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>http://vmguest/Wesley</IISAppRootUrl>
+          <IISAppRootUrl>http://vmguest/OpenDoors</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

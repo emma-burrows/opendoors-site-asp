@@ -60,6 +60,7 @@
           <Property Name="title" Type="varchar" Nullable="false" MaxLength="255" />
           <Property Name="summary" Type="longtext" />
           <Property Name="authorid" Type="int" Nullable="false" />
+          <Property Name="coauthorid" Type="int" Nullable="true" />
           <Property Name="rating" Type="varchar" Nullable="false" MaxLength="255" />
           <Property Name="date" Type="date" Nullable="true" />
           <Property Name="updated" Type="date" Nullable="true" />
@@ -140,6 +141,7 @@
           <Property Name="Title" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Summary" Type="String" Nullable="false" MaxLength="1073741823" Unicode="false" FixedLength="false" />
           <Property Name="AuthorID" Type="Int32" Nullable="false" />
+          <Property Name="CoAuthorID" Type="Int32" Nullable="true" />
           <Property Name="Rating" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Date" Type="DateTime" Nullable="true" />
           <Property Name="Updated" Type="DateTime" Nullable="true" />
@@ -274,6 +276,7 @@
                 <ScalarProperty Name="Title" ColumnName="title" />
                 <ScalarProperty Name="Summary" ColumnName="summary" />
                 <ScalarProperty Name="AuthorID" ColumnName="authorid" />
+                <ScalarProperty Name="CoAuthorID" ColumnName="coauthorid" />
                 <ScalarProperty Name="Rating" ColumnName="rating" />
                 <ScalarProperty Name="Date" ColumnName="date" />
                 <ScalarProperty Name="Updated" ColumnName="updated" />

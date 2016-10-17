@@ -23,6 +23,7 @@ namespace OpenDoors.Models
         public string Title { get; set; }
         public string Summary { get; set; }
         public int AuthorID { get; set; }
+        public Nullable<int> CoAuthorID { get; set; }
         public string Rating { get; set; }
         public Nullable<System.DateTime> Date { get; set; }
         public Nullable<System.DateTime> Updated { get; set; }
