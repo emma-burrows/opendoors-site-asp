@@ -301,10 +301,16 @@ namespace OpenDoors.Code
     private WorkImportRequest externalWork(Story story, RequestContext requestContext)
     {
       Author author = story.Author;
+      Author coauthor = story.CoAuthor;
 
       WorkImportRequest external = new WorkImportRequest();
       external.ExternalAuthorName   = author.Name;
       external.ExternalAuthorEmail  = author.Email;
+      if (story.CoAuthor != null)
+      {
+        external.ExternalCoauthorName = coauthor.Name;
+        external.ExternalCoauthorEmail = coauthor.Email;
+      }
       external.Id                   = story.ID.ToString();
       external.Summary              = story.Summary;
       external.Fandoms              = story.Fandoms;

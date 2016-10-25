@@ -31,7 +31,7 @@ namespace OpenDoors.Models
         public string Tags { get; set; }
         public string Warnings { get; set; }
         public string Notes { get; set; }
-        public String Url { get; set; }
+	    public string Url { get; set; }
         public bool Imported { get; set; }
         public bool DoNotImport { get; set; }
         public string Ao3Url { get; set; }
@@ -40,6 +40,7 @@ namespace OpenDoors.Models
         public string Relationships { get; set; }
     
         public virtual Author Author { get; set; }
+    	public virtual Author CoAuthor { get; set; }
         public virtual ICollection<Chapter> Chapters { get; set; }
     }
 }

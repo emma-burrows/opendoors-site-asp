@@ -8,11 +8,12 @@
         <EntityTypeShape EntityType="od_sgfModel.Author" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="od_sgfModel.Story" Width="1.5" PointX="3.125" PointY="0.75" IsExpanded="true" />
         <AssociationConnector Association="od_sgfModel.authorsstories" />
-	<EntityTypeShape EntityType="od_sgfModel.Bookmark" Width="1.5" PointX="6.125" PointY="0.75" IsExpanded="true" />
+	<EntityTypeShape EntityType="od_sgfModel.Bookmark" Width="1.5" PointX="9.625" PointY="0.75" IsExpanded="true" />
         <AssociationConnector Association="od_sgfModel.authorsbookmarks" />
         <EntityTypeShape EntityType="od_sgfModel.Chapter" Width="1.5" PointX="5.25" PointY="0.75" />
         <AssociationConnector Association="od_sgfModel.StoryChapter" />
-        <EntityTypeShape EntityType="od_sgfModel.ArchiveConfig" Width="1.5" PointX="7.5" PointY="0.75" />
+        <EntityTypeShape EntityType="od_sgfModel.ArchiveConfig" Width="1.5" PointX="11.5" PointY="0.75" />
+        <AssociationConnector Association="od_sgfModel.StoryCoAuthor" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

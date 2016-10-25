@@ -109,6 +109,10 @@
             <End Role="authors" EntitySet="Authors" />
             <End Role="stories" EntitySet="Stories" />
           </AssociationSet>
+          <AssociationSet Name="CoAuthoredStories" Association="od_sgfModel.CoAuthoredStories">
+            <End Role="Story" EntitySet="Stories" />
+            <End Role="CoAuthor" EntitySet="Authors" />
+          </AssociationSet>
           <EntitySet Name="Bookmarks" EntityType="od_sgfModel.Bookmark" />
           <AssociationSet Name="authorsbookmarks" Association="od_sgfModel.authorsbookmarks">
             <End Role="authors" EntitySet="Authors" />
@@ -132,6 +136,7 @@
           <Property Name="DoNotImport" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="Stories" Relationship="od_sgfModel.authorsstories" FromRole="authors" ToRole="stories" />
           <NavigationProperty Name="Bookmarks" Relationship="od_sgfModel.authorsbookmarks" FromRole="authors" ToRole="bookmarks" />
+          <NavigationProperty Name="CoAuthoredStories" Relationship="od_sgfModel.CoAuthoredStories" FromRole="CoAuthor" ToRole="Story" />
         </EntityType>
         <EntityType Name="Story">
           <Key>
@@ -158,6 +163,7 @@
           <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Characters" MaxLength="1024" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Relationships" MaxLength="1024" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="CoAuthor" Relationship="od_sgfModel.CoAuthoredStories" FromRole="Story" ToRole="CoAuthor" />
         </EntityType>
         <Association Name="authorsstories">
           <End Type="od_sgfModel.Author" Role="authors" Multiplicity="1" />
@@ -168,6 +174,18 @@
             </Principal>
             <Dependent Role="stories">
               <PropertyRef Name="AuthorID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="CoAuthoredStories">
+          <End Type="od_sgfModel.Author" Role="CoAuthor" Multiplicity="0..1" />
+          <End Type="od_sgfModel.Story" Role="Story" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CoAuthor">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Story">
+              <PropertyRef Name="CoAuthorID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>

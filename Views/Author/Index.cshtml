@@ -36,13 +36,16 @@
   {
     bool hasStories = item.Stories.Count > 0;
     bool hasBookmarks = item.Bookmarks.Count > 0;
+    bool hasCoAuthoredStories = item.CoAuthoredStories.Count > 0;
+    
     if(hasBookmarks || hasStories) {
       bool doNotImport = Convert.ToBoolean(item.DoNotImport);
       bool imported = Convert.ToBoolean(item.Imported);
       string cssClass = imported ? "imported" : "";
       cssClass += doNotImport ? "donotimport" : "";
 
-      <article class="col-md-12 @cssClass">
+      <article class="col-md-12 @cssClass" id="@item.ID">
+        <a name="@item.Name"></a>
         <div class="row">
           <div class="col-md-4 col-sm-3">
             <h2>@Html.DisplayFor(modelItem => item.Name)</h2>
@@ -83,23 +86,29 @@
               }
             }
             @Html.ActionLink(doNotImport ? "allow importing all" : "do NOT import all",
-                      "ImportNone",
-                      "Author",
-                      new { id = item.ID, doNotImport = !doNotImport, 
-                        letter = Request.QueryString["letter"], 
-                        page = Model.PageNumber,
-                        pageSize = Model.PageSize },
-                      new { @class = "btn btn-warning" })
+              "ImportNone",
+              "Author",
+              new
+              {
+                id = item.ID, doNotImport = !doNotImport,
+                letter = Request.QueryString["letter"],
+                page = Model.PageNumber,
+                pageSize = Model.PageSize
+              },
+              new {@class = "btn btn-warning"})
 
             @Html.ActionLink("check all imported",
-                    "CheckAll",
-                    "Author",
-                    new { id = item.ID, 
-                      letter = Request.QueryString["letter"], 
-                      page = Model.PageNumber, 
-                      pageSize = Model.PageSize },
-                    new { @class = "btn btn-success" })
-            <br />
+              "CheckAll",
+              "Author",
+              new
+              {
+                id = item.ID,
+                letter = Request.QueryString["letter"],
+                page = Model.PageNumber,
+                pageSize = Model.PageSize
+              },
+              new {@class = "btn btn-success"})
+            <br/>
           </div>
         </div>
         <hr />
@@ -124,9 +133,19 @@
           }
         }
 
+        @if (hasCoAuthoredStories)
+        {
+          ViewData["type"] = "CoAuthoredStory";
+          <h3>Co-authored stories</h3>
+          foreach (var coAuthoredStory in item.CoAuthoredStories.OrderBy(s => s.Title))
+          {
+            @Html.Partial("_Meta", coAuthoredStory, ViewData)
+          }
+        }
+
         @if (item.Stories.Count + item.Bookmarks.Count == 0)
         {
-          <span>No bookmarks or stories.</span>
+          <span>No bookmarks, stories or co-authored stories.</span>
         }
 
       </article>

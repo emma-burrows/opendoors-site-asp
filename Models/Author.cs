@@ -18,6 +18,7 @@ namespace OpenDoors.Models
         {
             this.Stories = new HashSet<Story>();
             this.Bookmarks = new HashSet<Bookmark>();
+        	this.CoAuthoredStories = new HashSet<Story>();
         }
     
         public int ID { get; set; }
@@ -28,5 +29,6 @@ namespace OpenDoors.Models
     
         public virtual ICollection<Story> Stories { get; set; }
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
+    	public virtual ICollection<Story> CoAuthoredStories { get; set; }
     }
 }

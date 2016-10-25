@@ -26,6 +26,10 @@
   bool imported = Convert.ToBoolean(Model.Imported) || (itemResponse != null && itemResponse.Status == "ok");
   bool isAuthorView = Convert.ToBoolean(HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString() == "Author");
   bool isStory = ViewData["type"] == "Story";
+  bool isCoAuthoredStory = ViewData["type"] == "CoAuthoredStory";
+  
+  bool hasCoAuthor = Model.CoAuthorID != null && Model.CoAuthorID != 0;
+  
   int id = Model.ID;
   string cssClass = imported ? "imported" : "";
   cssClass += doNotImport ? " donotimport" : "";
@@ -39,18 +43,22 @@
       }
       else
       {
-        if (isStory)
+        if (isStory || isCoAuthoredStory)
         {
-        <a href="@Url.Content("~/works/" + Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
+          <a href="@Url.Content("~/works/" + Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
         }
         else
         {
-        <a href="@Url.Content(Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
+          <a href="@Url.Content(Model.Url)">@OpenDoors.StringHelper.notLibrary(Model.Title)</a>
         }
       }
-      @if (!isAuthorView)
+      @if (!isAuthorView || hasCoAuthor)
       {
-        <span>by <b>@Model.Author.Name</b></span>
+        <span>by <b>@Model.Author.Name</b> 
+          @if (hasCoAuthor) {
+            <span>and <b>@Model.CoAuthor.Name</b></span>
+          }
+        </span>
       }<br />
       <span class="summary">[@Model.Rating] 
         @if (!String.IsNullOrEmpty(Model.Categories))
@@ -109,17 +117,19 @@
       }
     </div>
 
-    <div class="col-lg-6 col-md-5 col-sm-6 links">
-      @if (imported)
-      {
-        if (!String.IsNullOrEmpty(Model.Ao3Url))
+    @if (!isCoAuthoredStory)
+    {
+      <div class="col-lg-6 col-md-5 col-sm-6 links">
+        @if (imported)
         {
-        <a href="@Model.Ao3Url" target="_blank">view on AO3</a>
+          if (!String.IsNullOrEmpty(Model.Ao3Url))
+          {
+            <a href="@Model.Ao3Url" target="_blank">view on AO3</a>
+          }
         }
-      }
-      else if (!doNotImport)
-      {
-        @Html.ActionLink("import", "Import", controller,
+        else if (!doNotImport)
+        {
+          @Html.ActionLink("import", "Import", controller,
             new
             {
               id = Model.ID,
@@ -128,18 +138,19 @@
               pageSize = Request.QueryString["pageSize"],
               type = ViewData["type"]
             },
-            new { @class = "btn btn-info" })
-      }
-      <span></span>
+            new {@class = "btn btn-info"})
+        }
+        <span></span>
 
-      @Html.ActionLink(imported ? "mark NOT imported" : "mark as imported", "Edit", isStory ? "Story" : "Bookmark",
-            new { id = Model.ID, imported = !imported },
-            new { @class = "btn btn-success" })
-      <span></span>
+        @Html.ActionLink(imported ? "mark NOT imported" : "mark as imported", "Edit", isStory ? "Story" : "Bookmark",
+          new {id = Model.ID, imported = !imported},
+          new {@class = "btn btn-success"})
+        <span></span>
 
-      @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", "Edit", isStory ? "Story" : "Bookmark",
-            new { id = Model.ID, donotimport = !doNotImport },
-            new { @class = "btn btn-warning", title = "Mark as to be imported" })
-    </div>
+        @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", "Edit", isStory ? "Story" : "Bookmark",
+          new {id = Model.ID, donotimport = !doNotImport},
+          new {@class = "btn btn-warning", title = "Mark as to be imported"})
+      </div>
+    }
   </div>
 }
