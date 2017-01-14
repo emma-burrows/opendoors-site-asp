@@ -75,6 +75,7 @@
           <Property Name="imported" Type="bool" Nullable="false" />
           <Property Name="doNotImport" Type="bool" Nullable="false" />
           <Property Name="Ao3Url" Type="varchar" MaxLength="255" />
+          <Property Name="importnotes" Type="varchar" MaxLength="1024" />
         </EntityType>
       <EntityType Name="sitekey_bookmarks">
         <Key>
@@ -96,7 +97,9 @@
         <Property Name="url" Type="varchar" MaxLength="255" />
         <Property Name="imported" Type="bool" Nullable="false" />
         <Property Name="doNotImport" Type="bool" Nullable="false" />
+        <Property Name="brokenlink" Type="bool" Nullable="false" />
         <Property Name="Ao3Url" Type="varchar" MaxLength="255" />
+        <Property Name="importnotes" Type="varchar" MaxLength="1024" />
       </EntityType>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -158,11 +161,12 @@
           <Property Name="Imported" Type="Boolean" Nullable="false" />
           <Property Name="DoNotImport" Type="Boolean" Nullable="false" />
           <Property Name="Ao3Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
-          <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsstories" FromRole="stories" ToRole="authors" />
-          <NavigationProperty Name="Chapters" Relationship="od_sgfModel.StoryChapter" FromRole="Story" ToRole="Chapter" />
+          <Property Name="ImportNotes" Type="String" MaxLength="1024" Unicode="true" FixedLength="false" />
           <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Characters" MaxLength="1024" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Relationships" MaxLength="1024" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsstories" FromRole="stories" ToRole="authors" />
+          <NavigationProperty Name="Chapters" Relationship="od_sgfModel.StoryChapter" FromRole="Story" ToRole="Chapter" />
           <NavigationProperty Name="CoAuthor" Relationship="od_sgfModel.CoAuthoredStories" FromRole="Story" ToRole="CoAuthor" />
         </EntityType>
         <Association Name="authorsstories">
@@ -206,7 +210,9 @@
           <Property Name="Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="Imported" Type="Boolean" Nullable="false" />
           <Property Name="DoNotImport" Type="Boolean" Nullable="false" />
+          <Property Name="BrokenLink" Type="Boolean" Nullable="false" />
           <Property Name="Ao3Url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="ImportNotes" Type="String" MaxLength="1024" Unicode="true" FixedLength="false" />
           <NavigationProperty Name="Author" Relationship="od_sgfModel.authorsbookmarks" FromRole="bookmarks" ToRole="authors" />
           <Property Type="String" Name="Fandoms" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Characters" MaxLength="1024" FixedLength="false" Unicode="false" />
@@ -306,6 +312,7 @@
                 <ScalarProperty Name="Imported" ColumnName="imported" />
                 <ScalarProperty Name="DoNotImport" ColumnName="doNotImport" />
                 <ScalarProperty Name="Ao3Url" ColumnName="Ao3Url" />
+                <ScalarProperty Name="ImportNotes" ColumnName="importnotes" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -328,7 +335,9 @@
                 <ScalarProperty Name="Url" ColumnName="url" />
                 <ScalarProperty Name="Imported" ColumnName="imported" />
                 <ScalarProperty Name="DoNotImport" ColumnName="doNotImport" />
+                <ScalarProperty Name="BrokenLink" ColumnName="brokenlink" />
                 <ScalarProperty Name="Ao3Url" ColumnName="Ao3Url" />
+                <ScalarProperty Name="ImportNotes" ColumnName="importnotes" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

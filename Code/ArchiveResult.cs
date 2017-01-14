@@ -18,6 +18,15 @@ namespace OpenDoors.Code
     public List<String> Messages { get; set; }
     public List<StoryResponse> StoryResponses { get; set; }
     public List<BookmarkResponse> BookmarkResponses { get; set; }
+
+    public String ConcatAllMessages(String separator)
+    {
+      List<String> messages = Messages ?? new List<String>();
+      List<String> allStoryMessages = StoryResponses == null ? new List<string>() : StoryResponses.Select(s => String.Concat(s.OriginalId, " - ", String.Join(", ", s.Messages))).ToList() ;
+      List<String> allBookmarkMessages = BookmarkResponses == null ? new List<string>() : BookmarkResponses.Select(s => String.Concat(s.OriginalId, " - ", String.Join(", ", s.Messages))).ToList();
+      return String.Join(separator,
+        messages.Concat(allStoryMessages.Concat(allBookmarkMessages)));
+    }
   }
 
   public interface IItemResponse

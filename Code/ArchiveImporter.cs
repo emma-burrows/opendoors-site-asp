@@ -66,6 +66,7 @@ namespace OpenDoors.Code
       ImportRequest workimport = new ImportRequest();
       workimport.SendClaimEmails = ArchiveSettings.SendClaimEmails;
       workimport.PostWithoutPreview = ArchiveSettings.PostWithoutPreview;
+      workimport.DetectTags = true;
 
       // Bookmarks
       if (type == ImportSettings.ImportType.Bookmark) {

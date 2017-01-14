@@ -1,7 +1,9 @@
-﻿@{
+﻿@using System.Web.UI.WebControls
+@{
   var controller = ViewContext.RouteData.GetRequiredString("controller");
   var hasBookmarkResult = false;
   var hasStoryResult = false;
+ 
   OpenDoors.Code.IItemResponse itemResponse = null;
   // Process Archive results
   if (TempData["result"] != null)
@@ -15,20 +17,25 @@
     if (hasStoryResult)
     {
       itemResponse = (OpenDoors.Code.IItemResponse)result.StoryResponses.Find(s => s.OriginalId == Model.ID.ToString());
-    } 
+    }
     else if (hasBookmarkResult)
     {
       itemResponse = result.BookmarkResponses.Find(s => s.OriginalId == Model.ID.ToString()) as OpenDoors.Code.IItemResponse;
     }
   }
-    
-  bool doNotImport = Convert.ToBoolean(Model.DoNotImport);
-  bool imported = Convert.ToBoolean(Model.Imported) || (itemResponse != null && itemResponse.Status == "ok");
+
   bool isAuthorView = Convert.ToBoolean(HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString() == "Author");
   bool isStory = ViewData["type"] == "Story";
-  bool isCoAuthoredStory = ViewData["type"] == "CoAuthoredStory";
+  String itemType = isStory ? "Story" : "Bookmark";
   
-  bool hasCoAuthor = Model.CoAuthorID != null && Model.CoAuthorID != 0;
+  bool isCoAuthoredStory = ViewData["type"] == "CoAuthoredStory";
+
+  bool doNotImport = Convert.ToBoolean(Model.DoNotImport);
+  bool brokenLink = isStory ? false : Convert.ToBoolean(Model.BrokenLink);
+  bool imported = Convert.ToBoolean(Model.Imported) || (itemResponse != null && itemResponse.Status == "ok");
+
+
+  bool hasCoAuthor = isStory && Model.CoAuthorID != null && Model.CoAuthorID != 0;
   
   int id = Model.ID;
   string cssClass = imported ? "imported" : "";
@@ -54,19 +61,24 @@
       }
       @if (!isAuthorView || hasCoAuthor)
       {
-        <span>by <b>@Model.Author.Name</b> 
-          @if (hasCoAuthor) {
+        <span>by <b>@Model.Author.Name</b>
+          @if (hasCoAuthor)
+          {
             <span>and <b>@Model.CoAuthor.Name</b></span>
           }
         </span>
       }<br />
       <span class="summary">[@Model.Rating] 
         @if (!String.IsNullOrEmpty(Model.Categories))
-        { <span>- @Model.Categories</span><br/> }
+        { <span>- @Model.Categories</span> }
+        @if (!String.IsNullOrEmpty(Model.Fandoms))
+        { <span>- @Model.Fandoms</span> }
+        <br />
 
         @if (Model.Date != null)
         { <span><b>Date:</b> @Model.Date.ToString("yyyy-MM-dd")
-           @if (isStory && Model.Updated != null) { <span>- 
+          @if (isStory && Model.Updated != null)
+          { <span>- 
              <b>Updated:</b> @Model.Updated.ToString("yyyy-MM-dd")
              </span> }</span><br /> }
 
@@ -82,18 +94,20 @@
 
       <span class="summary">@Html.Raw(Model.Summary)</span><br />
 
-      @if (isStory) {
-      <ol>
-      @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
+      @if (isStory)
       {
-        if (String.IsNullOrEmpty(chapter.Url))
-        {
-          <li>
-          @Html.ActionLink((string)OpenDoors.StringHelper.notLibrary(chapter.Title),
-            "Details",
-            "Chapter",
-            new { id = chapter.ID },
-            new { })
+        <ol>
+          @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
+          {
+            if (String.IsNullOrEmpty(chapter.Url))
+            {
+            <li>
+          @Html.ActionLink(
+            linkText: (string)OpenDoors.StringHelper.notLibrary(chapter.Title),
+            actionName: "Details",
+            controllerName: "Chapter",
+            routeValues: new { id = chapter.ID },
+            htmlAttributes: new { })
           </li>
         }
         else
@@ -129,8 +143,11 @@
         }
         else if (!doNotImport)
         {
-          @Html.ActionLink("import", "Import", controller,
-            new
+          @Html.ActionLink(
+            linkText: "import", 
+            actionName: "Import", 
+            controllerName: controller,
+            routeValues: new
             {
               id = Model.ID,
               letter = Request.QueryString["letter"],
@@ -138,19 +155,46 @@
               pageSize = Request.QueryString["pageSize"],
               type = ViewData["type"]
             },
-            new {@class = "btn btn-info"})
+            htmlAttributes: new {@class = "btn btn-info"})
         }
         <span></span>
-
-        @Html.ActionLink(imported ? "mark NOT imported" : "mark as imported", "Edit", isStory ? "Story" : "Bookmark",
-          new {id = Model.ID, imported = !imported},
-          new {@class = "btn btn-success"})
+        @Html.ActionLink(
+          linkText: imported ? "mark NOT imported" : "mark as imported", 
+          actionName: "Edit", 
+          controllerName: itemType,
+          routeValues: new {id = Model.ID, imported = !imported},
+          htmlAttributes: new
+          {
+            @class = "btn btn-success",
+            onclick = doNotImport ? 
+              String.Format("return confirm('Are you sure this {0} has NOT been imported?');", itemType.ToLower()) :
+              String.Format("return confirm('Are you sure this {0} has BEEN imported?');", itemType.ToLower())
+          })
         <span></span>
 
-        @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", "Edit", isStory ? "Story" : "Bookmark",
-          new {id = Model.ID, donotimport = !doNotImport},
-          new {@class = "btn btn-warning", title = "Mark as to be imported"})
+        @Html.ActionLink(doNotImport ? "allow importing" : "do NOT import", 
+          actionName: "Edit", 
+          controllerName: itemType,
+          routeValues: new {id = Model.ID, donotimport = !doNotImport},
+          htmlAttributes: new {
+            @class = "btn btn-warning", 
+            title = "Mark as to be imported",
+            onclick = doNotImport ? 
+              String.Format("return confirm('Are you sure this {0} should ALLOW imports?');", itemType.ToLower()) :
+              String.Format("return confirm('Are you sure this {0} should NOT be imported?');", itemType.ToLower())
+            }
+         )
+	@if (!isStory)
+        {
+          @Html.ActionLink(brokenLink ? "mark link broken" : "mark link NOT broken", "Edit", "Bookmark",
+            new {id = Model.ID, brokenLink = !brokenLink},
+            new {@class = "btn btn-warning", title = brokenLink ? "Mark bookmarked link as NOT broken" : "Mark bookmarked link as broken"})
+        }
+        <!-- div>
+          @Html.TextArea("importNotes", (string) Model.ImportNotes, new {name = "importNotes", rows = 5})
+        </div -->
       </div>
+
     }
   </div>
 }

@@ -25,13 +25,16 @@ namespace OpenDoors.Models
         public string Warnings { get; set; }
         public string Notes { get; set; }
         public string Url { get; set; }
-        public bool Imported { get; set; }
-        public bool DoNotImport { get; set; }
-        public string Ao3Url { get; set; }
         public string Fandoms { get; set; }
         public string Characters { get; set; }
         public string Relationships { get; set; }
-    
+
+        public string Ao3Url { get; set; }
+        public bool Imported { get; set; }
+        public bool DoNotImport { get; set; }
+        public bool BrokenLink { get; set; }
+        public string ImportNotes { get; set; }
+
         public virtual Author Author { get; set; }
     }
 }
