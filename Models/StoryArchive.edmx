@@ -19,6 +19,7 @@
           <Property Name="id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="Name" Type="varchar" MaxLength="255" />
           <Property Name="ODNote" Type="text" />
+          <Property Name="BookmarksNote" Type="text" />
           <Property Name="SendEmail" Type="bool" Nullable="false" />
           <Property Name="PostWorks" Type="bool" Nullable="false" />
           <Property Name="ItemsPerPage" Type="int" Nullable="false" />
@@ -264,6 +265,7 @@
           <Property Type="Int32" Name="id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Type="String" Name="Name" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="ODNote" MaxLength="65535" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="BookmarksNote" MaxLength="65535" FixedLength="false" Unicode="false" />
           <Property Type="Boolean" Name="SendEmail" Nullable="false"/>
           <Property Type="Boolean" Name="PostWorks" Nullable="false"/>
           <Property Type="Int32" Name="ItemsPerPage" Nullable="false"/>
@@ -368,6 +370,7 @@
                 <ScalarProperty Name="PostWorks" ColumnName="PostWorks" />
                 <ScalarProperty Name="SendEmail" ColumnName="SendEmail" />
                 <ScalarProperty Name="ODNote" ColumnName="ODNote" />
+                <ScalarProperty Name="BookmarksNote" ColumnName="BookmarksNote" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="id" ColumnName="id" />
               </MappingFragment>

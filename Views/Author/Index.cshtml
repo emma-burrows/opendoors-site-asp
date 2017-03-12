@@ -1,6 +1,9 @@
 ﻿@model PagedList.IPagedList<OpenDoors.Models.Author>
+@using System.Text.RegularExpressions
+@using System.Xml.Linq
 @using PagedList;
 @using PagedList.Mvc;
+@using OpenDoors.Code
 
 @{
   var config = (OpenDoors.Models.ArchiveConfig)TempData["config"];
@@ -8,8 +11,20 @@
   Layout = "~/Views/_LayoutPage.cshtml";
   var letters = (List<String>)TempData["letters"];
   var currentLetter = Request.QueryString["letter"] ?? letters.First();
+  int authorWithMessage = -1;
+  ArchiveResult result = null;
+  if (TempData["result"] != null)
+  {
+    result = (OpenDoors.Code.ArchiveResult)TempData["result"];
+    if (result.Messages.Count > 0 && result.Messages.Exists(x => x.StartsWith("author-")))
+    {
+      Regex rxNonDigits = new Regex(@"[^\d]+");
+      authorWithMessage = Int32.Parse(rxNonDigits.Replace(result.Messages.Find(x => x.StartsWith("author-")), ""));
+    }
+  }
 }
 
+<!-- PAGINATION TOP -->
 <div class="center">
   <div class="pagination-container">
     <ul class="pagination">
@@ -32,27 +47,37 @@
     new { letter = Request.QueryString["letter"], page, pageSize = Model.PageSize }))
 </div>
 
+<!-- AUTHORS LIST -->
 <div class="row">
-  @foreach (var item in Model.OrderBy(item => item.Name))
+  @foreach (var author in Model.OrderBy(item => item.Name))
   {
-    bool hasStories = item.Stories.Count > 0;
-    bool hasBookmarks = item.Bookmarks.Count > 0;
-    bool hasCoAuthoredStories = item.CoAuthoredStories.Count > 0;
+    int storyCount = author.Stories.Count;
+    int bookmarkCount = author.Bookmarks.Count;
+    bool hasStories = storyCount > 0;
+    bool hasBookmarks = bookmarkCount > 0;
+    bool hasCoAuthoredStories = author.CoAuthoredStories.Count > 0;
     
     if(hasBookmarks || hasStories) {
-      bool doNotImport = Convert.ToBoolean(item.DoNotImport);
-      bool imported = Convert.ToBoolean(item.Imported);
+      bool doNotImport = Convert.ToBoolean(author.DoNotImport || (author.Stories.All(s => s.DoNotImport) && author.Bookmarks.All(b => b.DoNotImport)));
+      bool imported = Convert.ToBoolean(author.Imported || (author.Stories.All(s => s.Imported) && author.Bookmarks.All(b => b.Imported)));
       string cssClass = imported ? "imported" : "";
       cssClass += doNotImport ? "donotimport" : "";
+      string collapse = (imported || doNotImport) ? "collapse" : "expanded";
 
-      <article class="col-md-12 @cssClass" id="@item.ID">
-        <a name="@item.Name"></a>
+      <!-- AUTHOR -->
+      <article class="col-md-12 @cssClass" id="@author.ID">
+        <!-- author header block -->
+        <a name="@author.Name"></a>
         <div class="row">
-          <div class="col-md-4 col-sm-3">
-            <h2>@Html.DisplayFor(modelItem => item.Name)</h2>
+          <!-- author name -->
+          <div class="col-md-4 col-sm-3 author-name">
+            <a href="#items-@author.ID" data-toggle="collapse">
+              <h2>@Html.DisplayFor(modelItem => author.Name)</h2>
+              <div>@storyCount stories - @bookmarkCount bookmarks</div>
+            </a>
           </div>
+          <!-- buttons -->
           <div class="col-md-8 col-sm-9 extra-space">
-
             @if (!doNotImport && !imported)
             {
               if (hasStories)
@@ -62,7 +87,7 @@
                   "Author",
                   new
                   {
-                    id = item.ID,
+                    id = author.ID,
                     letter = Request.QueryString["letter"],
                     page = Model.PageNumber,
                     pageSize = Model.PageSize,
@@ -77,7 +102,7 @@
                   "Author",
                   new
                   {
-                    id = item.ID,
+                    id = author.ID,
                     letter = Request.QueryString["letter"],
                     page = Model.PageNumber,
                     pageSize = Model.PageSize,
@@ -91,13 +116,15 @@
               "Author",
               new
               {
-                id = item.ID, doNotImport = !doNotImport,
+                id = author.ID, doNotImport = !doNotImport,
                 letter = Request.QueryString["letter"],
                 page = Model.PageNumber,
                 pageSize = Model.PageSize
               },
-              new {@class = "btn btn-warning",
-                onclick = doNotImport ? 
+              new
+              {
+                @class = "btn btn-custom",
+                onclick = doNotImport ?
                   "return confirm('Are you sure this author should ALLOW imports?\\n\\nThis will also make all their works importable.');" :
                   "return confirm('Are you sure this author should NOT ALLOW imports?\\n\\nThis will also set all their works to Do Not Import.');"
               })
@@ -107,7 +134,7 @@
               "Author",
               new
               {
-                id = item.ID,
+                id = author.ID,
                 letter = Request.QueryString["letter"],
                 page = Model.PageNumber,
                 pageSize = Model.PageSize
@@ -115,44 +142,59 @@
               new {@class = "btn btn-success"})
             <br/>
           </div>
+          <!-- messages -->
+          @if (result != null && result.Messages.Count > 0 && authorWithMessage == author.ID)
+          {
+            var messages = new List<string>(result.Messages);
+            messages.RemoveAll(x => x == "error" || x.StartsWith("author-"));
+            <br/>
+            <div class="message-info @(result.Messages.Contains("error") ? "bg-danger" : "bg-info")">
+              @foreach (string s in messages)
+              {
+                <p>@Html.Raw(s)</p>
+              }
+            </div>
+            <br/>
+          }
         </div>
-        <hr/>
-
-        @if (hasStories)
-        {
-          ViewData["type"] = "Story";
-          <h3>Stories</h3>
-          foreach (var story in item.Stories.OrderBy(s => s.Title))
+        <!-- ITEMS -->
+        <div id="items-@author.ID" class="@collapse">
+          <hr/>
+          @if (hasStories)
           {
-            @Html.Partial("_Meta", story, ViewData)
+            ViewData["type"] = "Story";
+            <h3>Stories</h3>
+            foreach (var story in author.Stories.OrderBy(s => s.Title))
+            {
+              @Html.Partial("_Meta", story, ViewData)
+            }
           }
-        }
 
-        @if (hasBookmarks)
-        {
-          ViewData["type"] = "Bookmark";
-          <h3>Bookmarks</h3>
-          foreach (var bookmark in item.Bookmarks.OrderBy(s => s.Title))
+          @if (hasBookmarks)
           {
-            @Html.Partial("_Meta", bookmark, ViewData)
+            ViewData["type"] = "Bookmark";
+            <h3>Bookmarks</h3>
+            foreach (var bookmark in author.Bookmarks.OrderBy(s => s.Title))
+            {
+              @Html.Partial("_Meta", bookmark, ViewData)
+            }
           }
-        }
 
-        @if (hasCoAuthoredStories)
-        {
-          ViewData["type"] = "CoAuthoredStory";
-          <h3>Co-authored stories</h3>
-          foreach (var coAuthoredStory in item.CoAuthoredStories.OrderBy(s => s.Title))
+          @if (hasCoAuthoredStories)
           {
-            @Html.Partial("_Meta", coAuthoredStory, ViewData)
+            ViewData["type"] = "CoAuthoredStory";
+            <h3>Co-authored stories</h3>
+            foreach (var coAuthoredStory in author.CoAuthoredStories.OrderBy(s => s.Title))
+            {
+              @Html.Partial("_Meta", coAuthoredStory, ViewData)
+            }
           }
-        }
 
-        @if (item.Stories.Count + item.Bookmarks.Count == 0)
-        {
-          <span>No bookmarks, stories or co-authored stories.</span>
-        }
-
+          @if (author.Stories.Count + author.Bookmarks.Count == 0)
+          {
+            <span>No bookmarks, stories or co-authored stories.</span>
+          }
+        </div>
       </article>
     }
   }

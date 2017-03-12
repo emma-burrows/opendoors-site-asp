@@ -54,11 +54,13 @@ namespace OpenDoors.Controllers
       TempData["config"] = config;
       TempData["type"] = "Story";
       var storyIds = ids.Split(',').Select(i => Int32.Parse(i)).ToArray();
-      var result = archive.checkMany(storyIds, Request.RequestContext);
+      var result = archive.CheckMany(storyIds, Request.RequestContext, Request.UserHostAddress);
 
       TempData["result"] = result;
-      logger.Log(Response, string.Format("{0} [{1}]: Check all for stories {2} - response: {3}",
-  config.Name, Request.UserHostAddress, ids, String.Concat("\n", result.ConcatAllMessages("\n"))));
+      String message = string.Format("[{0}]: Check all for stories {1} - response: {2}",
+        Request.UserHostAddress, ids, String.Concat("\n", result.ConcatAllMessages("\n")));
+
+      logger.Log(Response, config.Name + " " + message);
 
       return Redirect(ControllerContext.HttpContext.Request.UrlReferrer.ToString());
     }
@@ -79,6 +81,9 @@ namespace OpenDoors.Controllers
       Story story = db.Stories.Find(id);
       story.Imported = imported;
       story.DoNotImport = doNotImport;
+      story.ImportNotes += logger.Audit(Request.UserHostAddress, string.Format("Set imported={0}, doNotImport={1}", imported, doNotImport));
+
+
       if (!story.DoNotImport && story.Author.DoNotImport) {
         story.Author.DoNotImport = false;
       }
@@ -103,7 +108,7 @@ namespace OpenDoors.Controllers
     {
       ArchiveImporter archive = new ArchiveImporter(db);
       string baseUrl = Request.Url.GetLeftPart(UriPartial.Authority) + Request.ApplicationPath + "/Chapter/Details/";
-      var result = archive.importMany(new int[] { id }, Request.RequestContext);
+      var result = archive.ImportMany(new int[] { id }, Request.RequestContext, Request.UserHostAddress);
       
       TempData["result"] = result;
       logger.Log(Response, string.Format("{0} [{1}]: Import story id [{2}] - response: {3}",
