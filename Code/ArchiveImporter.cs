@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Data;
 using System.Data.Entity;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Configuration;
@@ -25,10 +26,13 @@ namespace OpenDoors.Code
     public ImportSettings ArchiveSettings { get; set; }
     private ArchiveClient archive;
     public ArchiveConfig config;
+    private Logging logger;
 
     public ArchiveImporter(Entities db)
     {
       this.db = db;
+
+      logger = new Logging(Path.Combine(HttpRuntime.AppDomainAppPath + "\\Log" + DateTime.Today.ToString("-yyyy-MM-dd") + ".log"));
 
       NameValueCollection webConfig = (NameValueCollection)WebConfigurationManager.GetSection("ArchiveSettings");
       String key = webConfig["Key"];
@@ -55,8 +59,10 @@ namespace OpenDoors.Code
     /// </summary>
     /// <param name="ids">Stories or bookmarks to import</param>
     /// <param name="requestContext">HTTP request context (to retrieve host)</param>
+    /// <param name="author">author if there is one</param>
     /// <returns>Archive results with the final message, timing and list of story or bookmark messages</returns>
-    public ArchiveResult importMany(int[] ids, RequestContext requestContext, 
+    public ArchiveResult ImportMany(int[] ids, RequestContext requestContext,
+                                    String ipAddress, Author author = null,
                                     ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       List<String> messages = new List<string>();
@@ -74,7 +80,7 @@ namespace OpenDoors.Code
         foreach (int id in ids)
         {
           Bookmark bookmark = db.Bookmarks.Find(id);
-          if (!bookmark.DoNotImport)
+          if (!bookmark.DoNotImport && !bookmark.BrokenLink)
             workimport.Bookmarks.Add(extBookmark(bookmark, requestContext));
         }
       }
@@ -96,10 +102,13 @@ namespace OpenDoors.Code
       var elapsed = stopwatch.Elapsed;
 
       // Bundle up some general messages
-      messages = new List<string> {
-            String.Join("", result.Messages),
-            String.Format("<p>Processing time: {0:00}m{1:00}s{2:00}.</p>", elapsed.Minutes, elapsed.Seconds, elapsed.Milliseconds)
-          };
+      if (author != null)
+      {
+        messages.Add(String.Format("author-{0}-messages", author.ID));
+      } 
+      messages.Add(String.Join("", result.Messages));
+      messages.Add(String.Format("<p>Processing time: {0:00}m{1:00}s{2:00}.</p>", elapsed.Minutes, elapsed.Seconds, elapsed.Milliseconds));
+
 
       // Stories
       if (result.Works != null)
@@ -115,13 +124,17 @@ namespace OpenDoors.Code
           {
             story.Imported = true;
             story.Ao3Url = workResponse.ArchiveUrl;
-            config.NotImported = config.NotImported - 1;
-            config.Imported = config.Imported + 1;
+            story.ImportNotes += logger.Audit(ipAddress, string.Format("Imported to {0}", workResponse.ArchiveUrl));
+
+            config.NotImported -= 1;
+            config.Imported += 1;
             db.Entry(story).State = EntityState.Modified;
           }
           else if (workResponse.Messages.Exists(m => m.StartsWith("A work has already been imported")))
           {
             story.Imported = true;
+            story.ImportNotes += logger.Audit(ipAddress, "Import requested but was already imported");
+
             // story.Ao3Url = workResponse.ArchiveUrl; // TODO: Change Archive to return URL
 
             db.Entry(story).State = EntityState.Modified;
@@ -147,12 +160,15 @@ namespace OpenDoors.Code
           {
             bookmark.Imported = true;
             bookmark.Ao3Url = bookmarkResponse.ArchiveUrl;
+            bookmark.ImportNotes += logger.Audit(ipAddress, string.Format("Imported to {0}", bookmarkResponse.ArchiveUrl));
             
             db.Entry(bookmark).State = EntityState.Modified;
           }
           else if (bookmarkResponse.Messages.Exists(m => m.StartsWith("There is already a bookmark for this archivist")))
           {
             bookmark.Imported = true;
+            bookmark.ImportNotes += logger.Audit(ipAddress, "Imported requested but was already imported");
+
             // bookmark.Ao3Url = bookmarkResponse.ArchiveUrl; // TODO: Change Archive to return URL
             
             db.Entry(bookmark).State = EntityState.Modified;
@@ -180,7 +196,7 @@ namespace OpenDoors.Code
     /// <param name="doNotImport">True = do not import, False = allow import</param>
     /// <param name="type">ImportSettings.ImportType</param>
     /// <returns>ArchiveResult indicating</returns>
-    public ArchiveResult importNone(int[] ids, bool doNotImport,
+    public ArchiveResult ImportNone(int[] ids, bool doNotImport, String ipAddress,
                                     ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       List<StoryResponse> storiesWithResponses = null;
@@ -192,6 +208,8 @@ namespace OpenDoors.Code
         foreach (Story s in stories)
         {
           s.DoNotImport = doNotImport;
+          s.ImportNotes += logger.Audit(ipAddress, string.Format("Set to {0}", doNotImport ? "do NOT import" : "allow importing"));
+
           db.Entry(s).State = EntityState.Modified;
           storiesWithResponses.Add(new StoryResponse("updated", "", "", new List<string>() {"Updated " + s.Title + "."},
             s.ID.ToString()));
@@ -204,6 +222,8 @@ namespace OpenDoors.Code
         foreach (Bookmark b in bookmarks)
         {
           b.DoNotImport = doNotImport;
+          b.ImportNotes += logger.Audit(ipAddress, string.Format("Set to {0}", doNotImport ? "do NOT import" : "allow importing"));
+
           db.Entry(b).State = EntityState.Modified;
           bookmarksWithResponses.Add(new BookmarkResponse("updated", "", "", new List<string>() { "Updated " + b.Title + "." },
             b.ID.ToString()));
@@ -219,7 +239,7 @@ namespace OpenDoors.Code
     /// <param name="ids"></param>
     /// <param name="requestContext"></param>
     /// <returns></returns>
-    public ArchiveResult checkMany(int[] ids, RequestContext requestContext)
+    public ArchiveResult CheckMany(int[] ids, RequestContext requestContext, String ipAddress)
     {
       List<String> messages = new List<string>();
       List<WorksResponse> workResults = new List<WorksResponse>();
@@ -261,6 +281,7 @@ namespace OpenDoors.Code
                 config.NotImported = config.NotImported - 1;
                 story.Imported = true;
                 story.Ao3Url = workResponse.ArchiveUrl;
+                story.ImportNotes += logger.Audit(ipAddress, string.Format("Checked and found at {0}", workResponse.ArchiveUrl));
                 db.Entry(story).State = EntityState.Modified;
                 workResponse.Messages.Add("Found work on the Archive and updated its status here.");
               }
@@ -270,6 +291,7 @@ namespace OpenDoors.Code
                 config.NotImported = config.NotImported + 1;
                 story.Imported = false;
                 story.Ao3Url = "";
+                story.ImportNotes += logger.Audit(ipAddress, "Checked and not found");
                 db.Entry(story).State = EntityState.Modified;
                 workResponse.Messages.Add("Did not find work on the Archive and updated its status here.");
               }
@@ -278,6 +300,7 @@ namespace OpenDoors.Code
                 if (story.Ao3Url != workResponse.ArchiveUrl)
                 {
                   story.Ao3Url = workResponse.ArchiveUrl;
+                  story.ImportNotes += logger.Audit(ipAddress, string.Format("Checked and Ao3Url was updated to {0}", workResponse.ArchiveUrl));
                   db.Entry(story).State = EntityState.Modified;
                 }
                 workResponse.Messages.Add("Story status is correct.");
@@ -287,7 +310,7 @@ namespace OpenDoors.Code
           }
           else
           {
-            messages.Add("None of the works have been imported.");
+            messages.Add("None of the works were checked.");
           }
         }
       }
@@ -371,7 +394,11 @@ namespace OpenDoors.Code
       external.CollectionNames = config.CollectionName;
       // work.WarningString = bookmark.Warnings;
       external.TagString = bookmark.Tags;
-      external.Notes = bookmark.Notes;
+      external.Notes = config.BookmarksNote;
+      if (!String.IsNullOrEmpty(bookmark.Notes))
+      {
+        external.Notes += "\n\n" + bookmark.Notes;
+      }
 
       return external;
     }

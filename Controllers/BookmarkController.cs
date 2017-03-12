@@ -61,13 +61,13 @@ namespace OpenDoors.Controllers
       return View(bookmark);
     }
 
-    public ActionResult Edit(int id, bool imported = false, bool doNotImport = false, bool brokenLink = false)
+    public ActionResult Edit(int id, String ipAddress, bool imported = false, bool doNotImport = false, bool brokenLink = false)
     {
       Bookmark bookmark = db.Bookmarks.Find(id);
       bookmark.Imported = imported;
       bookmark.DoNotImport = doNotImport;
-      // bookmark.BrokenLink = brokenLink;
-
+      bookmark.BrokenLink = brokenLink;
+      
       // Set author not DNI if this is toggled to import
       if (!bookmark.DoNotImport && bookmark.Author.DoNotImport) {
         bookmark.Author.DoNotImport = false;
@@ -78,6 +78,12 @@ namespace OpenDoors.Controllers
       {
         bookmark.Author.DoNotImport = true;
       }
+
+      // Set message
+      String message = string.Format("[{0}]: Set imported={1}, doNotImport={2}, brokenLink={3} all for bookmark {4} [{5}]",
+        Request.UserHostAddress, imported, doNotImport, brokenLink, bookmark.Title, id);
+      bookmark.ImportNotes += logger.Audit(ipAddress, string.Format("Set imported={0}, doNotImport={1}, brokenLink={2}", imported, doNotImport, brokenLink));
+
       if (ModelState.IsValid)
       {
         db.Entry(bookmark).State = EntityState.Modified;
@@ -85,8 +91,7 @@ namespace OpenDoors.Controllers
         db.SaveChanges();
       }
 
-      logger.Log(Response, string.Format("{0} [{1}]: Set imported={2}, doNotImport={3} all for bookmark id [{4}]",
-config.Name, Request.UserHostAddress, imported, doNotImport, id)); 
+      logger.Log(Response, config.Name + " " + message); 
 
       return Redirect(ControllerContext.HttpContext.Request.UrlReferrer.ToString());
     }
@@ -95,7 +100,7 @@ config.Name, Request.UserHostAddress, imported, doNotImport, id));
     {
       ArchiveImporter archive = new ArchiveImporter(db);
       string baseUrl = Request.Url.GetLeftPart(UriPartial.Authority) + Request.ApplicationPath + "/Chapter/Details/";
-      var result = archive.importMany(new int[] { id }, Request.RequestContext, ImportSettings.ImportType.Bookmark);
+      var result = archive.ImportMany(new int[] { id }, Request.RequestContext, Request.UserHostAddress, null, ImportSettings.ImportType.Bookmark);
 
       TempData["result"] = result;
       logger.Log(Response, string.Format("{0} [{1}]: Import bookmark id [{2}] - response: {3}",

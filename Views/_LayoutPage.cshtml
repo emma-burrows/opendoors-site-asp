@@ -69,11 +69,13 @@
     @if (TempData["result"] != null)
     {
       var result = (OpenDoors.Code.ArchiveResult)TempData["result"];
+      var messages = new List<string>(result.Messages);
+      messages.RemoveAll(x => x == "error" || x.StartsWith("author-"));
       if (result.Messages.Count > 0)
       {
       <br />
       <div class="message-info @(result.Messages.Contains("error") ? "bg-danger" : "bg-info")">
-        @foreach (string s in result.Messages.Except(new List<string> { "error" }))
+        @foreach (string s in messages)
         {
           <p>@Html.Raw(s)</p>
         }
@@ -112,6 +114,17 @@
     <footer>@typeof(OpenDoors.MvcApplication).Assembly.GetName().Version</footer>
   </div>
   <script src="http://code.jquery.com/jquery-2.1.4.min.js" type="text/javascript"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
+<script>
+  $(document).scroll(function () {
+    localStorage['page'] = document.URL;
+    localStorage['scrollTop'] = $(document).scrollTop();
+  });
+  $(document).ready(function () {
+    if (localStorage['page'] == document.URL) {
+      $(document).scrollTop(localStorage['scrollTop']);
+    }
+  });
+</script>
 </body>
 </html>

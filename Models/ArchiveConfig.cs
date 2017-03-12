@@ -20,6 +20,8 @@ namespace OpenDoors.Models
         public string Name { get; set; }
         [AllowHtml]
         public string ODNote { get; set; }
+        public string BookmarksNote { get; set; }
+
         public bool SendEmail { get; set; }
         [DisplayName("Post as drafts")]
         public bool PostWorks { get; set; }

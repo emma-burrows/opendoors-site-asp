@@ -18,9 +18,60 @@ article
     padding: 10px 20px;
 }
 
+.audit {
+  font-size: small;
+  text-decoration: none;
+  font-weight: normal;
+}
+
+/******* Bootstrap Override ******/
+.btn-custom {
+  background-color: #cf6c72;
+  border-color: #cf6c72;
+  color: white;
+}
+.btn-custom:hover,
+.btn-custom:focus,
+.btn-custom:active,
+.btn-custom.active {
+  background-color: #c95960;
+  border-color: #c2464d;
+}
+.btn-custom.disabled:hover,
+.btn-custom.disabled:focus,
+.btn-custom.disabled:active,
+.btn-custom.disabled.active,
+.btn-custom[disabled]:hover,
+.btn-custom[disabled]:focus,
+.btn-custom[disabled]:active,
+.btn-custom[disabled].active,
+fieldset[disabled] .btn-custom:hover,
+fieldset[disabled] .btn-custom:focus,
+fieldset[disabled] .btn-custom:active,
+fieldset[disabled] .btn-custom.active {
+  background-color: #cf6c72;
+  border-color: #cf6c72;
+}
+
+
 /******* AO3 specific *******/
 .chapter-content {
   margin-top: 20px;
+}
+
+.author-name a {
+  text-decoration: none;
+  color: #404040;
+}
+
+.storytitle {
+  padding-top: 5px;
+}
+
+.storytitle > a > span {
+  padding-top: 10px;
+  font-size: medium;
+  color: #494949;
 }
 
 .storytitlediv {
@@ -43,14 +94,16 @@ article
   text-decoration: none;
   margin-left: 0px;
   margin-right: 5px;
-  padding: 2px 10px;
-  color: darkgray;
+  color: #494949;
 }
+  .imported .storytitle > a  {
+    color: #494949;
+    margin-top: 20px;
+  }
   .storytitle a.imported  {
-    color: darkgrey;
+    color: #494949;
     font-weight: normal;
     background-color: transparent;
-    padding-left: 2px;
   }
 
 .donotimport
@@ -60,14 +113,35 @@ article
   text-decoration: none;
   margin-left: 0px;
   margin-right: 5px;
-  padding: 2px 10px;
-  color: gray;
+  color: #494949;
 }
-  .donotimport .storytitle {
-    color: darkgray;
+  .donotimport .storytitle > a  {
+    color: #494949;
+    margin-top: 20px;
+  }
+  .donotimport a.storytitle {
+    color: #494949;
     font-weight: normal;
     background-color: transparent;
-    /* padding-left: 2px; */
+  }
+
+.brokenLink
+{
+  background-color: #fbc680;
+  border-radius: 10px;
+  text-decoration: none;
+  margin-left: 0px;
+  margin-right: 5px;
+  color: #494949;
+}
+  .brokenLink .storytitle > a  {
+    color: #494949;
+    margin-top: 20px;
+  }
+  .brokenLink a.storytitle {
+    color: #494949;
+    font-weight: normal;
+    background-color: transparent;
   }
 
 .extra-space {

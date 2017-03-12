@@ -52,12 +52,12 @@ namespace OpenDoors.Controllers
       return View(authors.OrderBy(i => i.Name).ToPagedList(page, pageSize));
     }
 
-    public ActionResult Import(int id, string letter = "", int page = 1, int pageSize = 30,
+    public ActionResult Import(int id, Author author, string letter = "", int page = 1, int pageSize = 30,
                                ImportSettings.ImportType type = ImportSettings.ImportType.Work)
     {
       letter = SetTempDataAndDefaultLetter(letter);
       
-      var result = archive.importMany(new int[] { id }, this.Request.RequestContext, type);
+      var result = archive.ImportMany(new int[] { id }, this.Request.RequestContext, Request.UserHostAddress, author, type);
       TempData["result"] = result;
       logger.Log(Response, string.Format("{0} [{1}]: Import {2} [{3}] - response: {4}",
         config.Name, Request.UserHostAddress, type.GetType(), id, String.Concat("\n", result.ConcatAllMessages("\n")))); 
@@ -78,8 +78,8 @@ namespace OpenDoors.Controllers
       int[] storyIds = author.Stories.Where(s => s.DoNotImport == !doNotImport).Select(s => s.ID).ToArray();
       int[] bookmarkIds = author.Bookmarks.Where(b => b.DoNotImport == !doNotImport).Select(b => b.ID).ToArray();
 
-      ArchiveResult result = archive.importNone(storyIds, doNotImport, ImportSettings.ImportType.Work);
-      ArchiveResult bookmarkResult = archive.importNone(bookmarkIds, doNotImport, ImportSettings.ImportType.Bookmark);
+      ArchiveResult result = archive.ImportNone(storyIds, doNotImport, Request.UserHostAddress, ImportSettings.ImportType.Work);
+      ArchiveResult bookmarkResult = archive.ImportNone(bookmarkIds, doNotImport, Request.UserHostAddress, ImportSettings.ImportType.Bookmark);
       result.BookmarkResponses = bookmarkResult.BookmarkResponses;
       
       TempData["result"] = result;
@@ -98,11 +98,11 @@ namespace OpenDoors.Controllers
       Author author = db.Authors.Find(id);
       if (type == ImportSettings.ImportType.Work)
       {
-        ids = author.Stories.Where(s => s.Imported == false).Select(s => s.ID).ToArray();
+        ids = author.Stories.Where(s => !s.Imported && !s.DoNotImport).Select(s => s.ID).ToArray();
       }
       else if (type == ImportSettings.ImportType.Bookmark)
       {
-        ids = author.Bookmarks.Where(b => b.Imported == false).Select(b => b.ID).ToArray();
+        ids = author.Bookmarks.Where(b => !b.Imported && !b.DoNotImport && !b.BrokenLink).Select(b => b.ID).ToArray();
       }
 
       ArchiveResult result = 
@@ -125,7 +125,7 @@ namespace OpenDoors.Controllers
                 null);
         }
       } else {
-         result = archive.importMany(ids, Request.RequestContext, type);
+        result = archive.ImportMany(ids, Request.RequestContext, Request.UserHostAddress, author, type);
       }
 
       TempData["result"] = result;
@@ -141,7 +141,7 @@ namespace OpenDoors.Controllers
 
       Author author = db.Authors.Find(id);
       int[] ids = author.Stories.Select(s => s.ID).ToArray();
-      var result = archive.checkMany(ids, Request.RequestContext);
+      var result = archive.CheckMany(ids, Request.RequestContext, Request.UserHostAddress);
 
       TempData["result"] = result;
       logger.Log(Response, string.Format("{0} [{1}]: Check all for author '{2}' [{3}] - response: {4}",

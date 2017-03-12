@@ -40,10 +40,12 @@
   int id = Model.ID;
   string cssClass = imported ? "imported" : "";
   cssClass += doNotImport ? " donotimport" : "";
+  cssClass += brokenLink ? " brokenLink" : "";
   cssClass += " " + ViewData["type"];
 
-  <div class="row storytitlediv @cssClass" id="@id">
+  <div class="row storytitlediv @cssClass" id="@itemType-@id">
     <div class="col-lg-6 col-md-7 col-sm-6 storytitle">
+      <a href=".blurb-@itemType-@id" data-toggle="collapse">
       @if (String.IsNullOrEmpty(Model.Url) && Model.Chapters.Count > 0)
       {
         <span>@OpenDoors.StringHelper.notLibrary(Model.Title)</span>
@@ -67,70 +69,86 @@
             <span>and <b>@Model.CoAuthor.Name</b></span>
           }
         </span>
-      }<br />
-      <span class="summary">[@Model.Rating] 
+      }
+      @if (isStory)
+      {
+        <span>(@Model.Chapters.Count chapters)</span>
+      }
+      else
+      {
+        <span><a href=".blurb-@itemType-@id" data-toggle="collapse">(expand)</a></span>
+      }
+      </a><br/>
+      <div id="meta-@itemType-@id" class="blurb-@itemType-@id collapse">
+        <span class="summary">[@Model.Rating] 
         @if (!String.IsNullOrEmpty(Model.Categories))
-        { <span>- @Model.Categories</span> }
+        {
+          <span>- @Model.Categories</span>
+        }
         @if (!String.IsNullOrEmpty(Model.Fandoms))
-        { <span>- @Model.Fandoms</span> }
+        {
+          <span>- <b>Fandoms:</b> @Model.Fandoms</span>
+        }
         <br />
 
         @if (Model.Date != null)
-        { <span><b>Date:</b> @Model.Date.ToString("yyyy-MM-dd")
+        {
+          <span><b>Date:</b> @Model.Date.ToString("yyyy-MM-dd")
           @if (isStory && Model.Updated != null)
-          { <span>- 
+          {
+            <span>- 
              <b>Updated:</b> @Model.Updated.ToString("yyyy-MM-dd")
-             </span> }</span><br /> }
+          </span>
+          }</span><br />
+        }
 
         @if (!String.IsNullOrEmpty(Model.Warnings))
-        { <span><b>Warnings:</b> @Model.Warnings</span><br /> }
+        {
+          <span><b>Warnings:</b> @Model.Warnings</span><br />
+        }
         @if (!String.IsNullOrEmpty(Model.Relationships))
-        { <span><b>Relationships:</b> @Model.Relationships</span><br /> }
+        {
+          <span><b>Relationships:</b> @Model.Relationships</span><br />
+        }
         @if (!String.IsNullOrEmpty(Model.Characters))
-        { <span><b>Characters:</b> @Model.Characters</span><br/> }
+        {
+          <span><b>Characters:</b> @Model.Characters</span><br />
+        }
         @if (!String.IsNullOrEmpty(Model.Tags))
-        { <span><b>Tags:</b> @Model.Tags</span><br/> }
+        {
+          <span><b>Tags:</b> @Model.Tags</span><br />
+        }
       </span>
 
-      <span class="summary">@Html.Raw(Model.Summary)</span><br />
+      <span class="summary"><b>Summary:</b> @Html.Raw(Model.Summary)</span><br/>
 
-      @if (isStory)
-      {
-        <ol>
-          @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
-          {
-            if (String.IsNullOrEmpty(chapter.Url))
-            {
-            <li>
-          @Html.ActionLink(
-            linkText: (string)OpenDoors.StringHelper.notLibrary(chapter.Title),
-            actionName: "Details",
-            controllerName: "Chapter",
-            routeValues: new { id = chapter.ID },
-            htmlAttributes: new { })
-          </li>
-        }
-        else
+        @if (isStory)
         {
-          <li><a href="@Url.Content("~/works/" + chapter.Url)">@chapter.Title</a></li>
-        }
-      }
-      </ol>
-      }
-
-      @if (hasStoryResult || hasBookmarkResult)
-       {
-        <div class="message-info @(itemResponse.Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
-          <ul>
-            @foreach (string s in itemResponse.Messages)
+          <ol>
+            @foreach (OpenDoors.Models.Chapter chapter in Model.Chapters)
             {
-              <li>@Html.Raw(s)</li>
+              if (String.IsNullOrEmpty(chapter.Url))
+              {
+                <li>
+                  @Html.ActionLink(
+                    linkText: (string) OpenDoors.StringHelper.notLibrary(chapter.Title),
+                    actionName: "Details",
+                    controllerName: "Chapter",
+                    routeValues: new {id = chapter.ID},
+                    htmlAttributes: new {})
+                </li>
+              }
+              else
+              {
+                <li><a href="@Url.Content("~/works/" + chapter.Url)">@chapter.Title</a></li>
+              }
             }
-          </ul>
-        </div>
-      }
+          </ol>
+        }
+      </div>
     </div>
 
+    <!-- BUTTONS -->
     @if (!isCoAuthoredStory)
     {
       <div class="col-lg-6 col-md-5 col-sm-6 links">
@@ -150,6 +168,7 @@
             routeValues: new
             {
               id = Model.ID,
+              author = Model.Author,
               letter = Request.QueryString["letter"],
               page = Request.QueryString["page"],
               pageSize = Request.QueryString["pageSize"],
@@ -166,7 +185,7 @@
           htmlAttributes: new
           {
             @class = "btn btn-success",
-            onclick = doNotImport ? 
+            onclick = imported ? 
               String.Format("return confirm('Are you sure this {0} has NOT been imported?');", itemType.ToLower()) :
               String.Format("return confirm('Are you sure this {0} has BEEN imported?');", itemType.ToLower())
           })
@@ -177,7 +196,7 @@
           controllerName: itemType,
           routeValues: new {id = Model.ID, donotimport = !doNotImport},
           htmlAttributes: new {
-            @class = "btn btn-warning", 
+            @class = "btn btn-custom", 
             title = "Mark as to be imported",
             onclick = doNotImport ? 
               String.Format("return confirm('Are you sure this {0} should ALLOW imports?');", itemType.ToLower()) :
@@ -186,15 +205,27 @@
          )
 	@if (!isStory)
         {
-          @Html.ActionLink(brokenLink ? "mark link broken" : "mark link NOT broken", "Edit", "Bookmark",
+          @Html.ActionLink(brokenLink ? "mark link NOT broken" : "mark link broken", "Edit", "Bookmark",
             new {id = Model.ID, brokenLink = !brokenLink},
             new {@class = "btn btn-warning", title = brokenLink ? "Mark bookmarked link as NOT broken" : "Mark bookmarked link as broken"})
         }
-        <!-- div>
-          @Html.TextArea("importNotes", (string) Model.ImportNotes, new {name = "importNotes", rows = 5})
-        </div -->
       </div>
-
+    }
+    <div id="audit-@itemType-@id" class="col-lg-6 col-md-5 col-sm-6 audit blurb-@itemType-@id collapse">
+      @Html.Raw(Model.ImportNotes)
+    </div>
+        
+    @if (hasStoryResult || hasBookmarkResult)
+    {
+      <div class="message-info @(itemResponse.Status == "unprocessable_entity" ? "bg-danger" : "bg-info")">
+        <ul>
+          @foreach (string s in itemResponse.Messages)
+          {
+            <li>@Html.Raw(s)</li>
+          }
+        </ul>
+      </div>
     }
   </div>
 }
+ 

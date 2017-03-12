@@ -31,6 +31,11 @@ namespace OpenDoors.Code
       LogToFile(s);
     }
 
+    public String Audit(String ipAddress, String message)
+    {
+      return string.Format("{0} [{1}]: {2}</br>\n", DateTime.Now.ToString("yyyy-MM-dd HH:mm"), ipAddress, message);
+    }
+
     private string LogTime()
     {
       return DateTime.Now.ToString("yyyy-MM-dd") + " " + DateTime.Now.ToLongTimeString().ToString() + " ==> ";
